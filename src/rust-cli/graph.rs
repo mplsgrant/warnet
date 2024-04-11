@@ -1,3 +1,4 @@
+use petgraph::Graph;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::borrow::Cow;
@@ -5,12 +6,12 @@ use std::fs::File;
 use std::io::{BufReader, Cursor, Read};
 use std::path::{Path, PathBuf};
 
+use crate::graphml::GraphMl;
 use crate::util::{dump_bitcoin_conf, parse_bitcoin_conf};
 use anyhow::Context;
 use clap::Subcommand;
 use jsonschema::JSONSchema;
 use petgraph::graph::{DiGraph, NodeIndex};
-use petgraph_graphml::GraphMl;
 use quickxml_to_serde::{xml_string_to_json, Config};
 use xmltree::{Element, EmitterConfig, XMLNode};
 
@@ -37,16 +38,16 @@ pub enum GraphCommand {
     },
 }
 
-fn create_graph(number: usize) -> anyhow::Result<DiGraph<(), ()>> {
+fn create_graph(number: usize) -> anyhow::Result<DiGraph<usize, usize>> {
     // Create initial cycle graph
-    let mut graph = DiGraph::new();
+    let mut graph: Graph<usize, usize> = DiGraph::new();
     let mut last_node: Option<NodeIndex> = None;
     let mut first_node: Option<NodeIndex> = None;
 
-    for _ in 0..number {
-        let new_node = graph.add_node(());
+    for i in 0..number {
+        let new_node = graph.add_node(i);
         if let Some(ln) = last_node {
-            graph.add_edge(ln, new_node, ()); // Add an edge from the last node to the new one
+            graph.add_edge(ln, new_node, 0); // Add an edge from the last node to the new one
         } else {
             first_node = Some(new_node);
         }
@@ -55,7 +56,7 @@ fn create_graph(number: usize) -> anyhow::Result<DiGraph<(), ()>> {
 
     if number > 0 {
         if let (Some(first), Some(last)) = (first_node, last_node) {
-            graph.add_edge(last, first, ()); // Connect the last node to the first to complete the cycle
+            graph.add_edge(last, first, 0); // Connect the last node to the first to complete the cycle
         }
     }
 
@@ -70,7 +71,7 @@ fn create_graph(number: usize) -> anyhow::Result<DiGraph<(), ()>> {
         // Add 7 extra outbounds
         for _ in 0..7 {
             if let Some(&random_target) = candidates.choose(&mut thread_rng()) {
-                graph.add_edge(node, random_target, ());
+                graph.add_edge(node, random_target, 0);
                 // Remove the selected target from candidates to avoid trying to add it again
                 candidates.retain(|&x| x != random_target);
             }
@@ -95,7 +96,7 @@ fn handle_bitcoin_conf(bitcoin_conf: Option<&Path>) -> String {
     conf_contents
 }
 
-fn convert_to_graphml(graph: &petgraph::graph::DiGraph<(), ()>) -> anyhow::Result<Vec<u8>> {
+fn convert_to_graphml(graph: &petgraph::graph::DiGraph<usize, usize>) -> anyhow::Result<Vec<u8>> {
     let graphml = GraphMl::new(graph).pretty_print(true);
     let mut buf = Vec::new();
     graphml
@@ -216,7 +217,7 @@ fn handle_create_command(
     let version_str: &str = version.as_deref().unwrap_or("26.0");
 
     // Create empty graph
-    let graph: DiGraph<(), ()> = create_graph(*number).context("creating graph")?;
+    let graph: DiGraph<usize, usize> = create_graph(*number).context("creating graph")?;
 
     // Parse any custom bitcoin conf
     let bitcoin_conf: String = handle_bitcoin_conf(bitcoin_conf.as_deref());

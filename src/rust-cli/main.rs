@@ -4,6 +4,7 @@ use clap::{Parser, Subcommand};
 mod debug;
 mod general;
 mod graph;
+mod graphml;
 mod image;
 mod network;
 mod rpc_call;

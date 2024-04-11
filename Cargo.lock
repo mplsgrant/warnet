@@ -1258,16 +1258,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "petgraph-graphml"
-version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f99237d858a7675759c308324348d81742553ed1d65ddce0854a55688e8487b"
-dependencies = [
- "petgraph",
- "xml-rs",
-]
-
-[[package]]
 name = "pin-project"
 version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2151,7 +2141,6 @@ dependencies = [
  "jsonrpsee",
  "jsonschema",
  "petgraph",
- "petgraph-graphml",
  "prettytable-rs",
  "quickxml_to_serde",
  "rand",
@@ -2159,6 +2148,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
+ "xml",
  "xmltree",
 ]
 
@@ -2418,10 +2408,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "xml-rs"
-version = "0.8.19"
+name = "xml"
+version = "0.8.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fcb9cbac069e033553e8bb871be2fbdffcab578eb25bd0f7c508cedc6dcd75a"
+checksum = "ede1c99c55b4b3ad0349018ef0eccbe954ce9c342334410707ee87177fcf2ab4"
+dependencies = [
+ "xml-rs",
+]
+
+[[package]]
+name = "xml-rs"
+version = "0.8.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "791978798f0597cfc70478424c2b4fdc2b7a8024aaff78497ef00f24ef674193"
 
 [[package]]
 name = "xmltree"
