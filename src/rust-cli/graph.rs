@@ -180,6 +180,12 @@ fn validate_schema(graph: &PathBuf) -> anyhow::Result<()> {
         serde_json::from_reader(reader).context("Read schema into serde_json Value")?;
     // TODO: this hack needing a static lifetime seems wrong. Try and fix it
     let schema_static: &'static serde_json::Value = Box::leak(Box::new(schema));
+    let node = match schema_static {
+        serde_json::Value::Object(obj) => obj.get("node").expect("A node schema"),
+        _ => panic!("not object"),
+    };
+    let node_schema = JSONSchema::compile(node).context("comopile node schema")?;
+
     let compiled_schema =
         JSONSchema::compile(schema_static).context("compile schema into JSONSchema")?;
 
@@ -188,21 +194,70 @@ fn validate_schema(graph: &PathBuf) -> anyhow::Result<()> {
     let mut reader = BufReader::new(f);
     let mut xml_string = String::new();
     reader.read_to_string(&mut xml_string)?;
+    let my_xml = xmltree::Element::parse(xml_string.as_bytes()).expect("xml document");
+    let xml_graph = my_xml.get_child("graph").expect("graph");
+    xml_graph.children.iter().for_each(|schema_type| {
+        let schema_type_name = &schema_type.as_element().unwrap().name;
+        let schema_type_children = &schema_type.as_element().unwrap().children;
+        println!("x: {}", schema_type_name);
+        match schema_type_name.as_str() {
+            "node" => {
+                schema_type_children.iter().for_each(|data| {
+                    let name = &data.as_element().unwrap().name;
+                    let attr = &data
+                        .as_element()
+                        .unwrap()
+                        .attributes
+                        .iter()
+                        .next()
+                        .expect("one attribute");
+                    println!("NAME: {}", name);
+                    println!("ATTR: {} {}", attr.0, attr.1);
+                });
+            }
+            _ => panic!("invalid schema type"),
+        }
+    });
+
     let conf = Config::new_with_defaults();
+
     let json = xml_string_to_json(xml_string, &conf).context("Convert xml string to JSON")?;
-    println!("{}", json);
+
+    let graphml_obj = json.as_object().expect("json from xml");
+    let graph_obj = graphml_obj
+        .get("graphml")
+        .expect("graphml object")
+        .as_object()
+        .expect("some graphml object");
+    let json_map = graph_obj
+        .get("graph")
+        .expect("graph object")
+        .as_object()
+        .expect("Some graph object");
+    let nodes = &json_map
+        .get("node")
+        .expect("nodes")
+        .as_array()
+        .expect("array of nodes");
+    let edges = &json_map
+        .get("edge")
+        .expect("edges")
+        .as_array()
+        .expect("array of edges");
 
     // Validate schema
     // TODO: THIS IS NOT WORKING
     // We need to iterate over nodes and edges and call validate on each one, I think?
-    let result = compiled_schema.validate(&json);
-    if let Err(errors) = result {
-        for error in errors {
-            println!("Validation error: {}", error);
-            println!("Instance path: {}", error.instance_path);
+
+    for node in nodes.iter() {
+        let result = node_schema.validate(node);
+        if let Err(errors) = result {
+            for error in errors {
+                println!("Validation error: {}", error);
+                println!("Instance path: {}", error.instance_path);
+            }
         }
     }
-    println!("Schema validated successfully!");
 
     Ok(())
 }
@@ -263,7 +318,8 @@ pub async fn handle_graph_command(command: &GraphCommand) -> anyhow::Result<()> 
             .context("Create a graph")?,
 
         GraphCommand::Validate { graph } => {
-            let _ = validate_schema(graph).context("Validating graph schema");
+            let result = validate_schema(graph).context("Validating graph schema");
+            println!("Result: {:?}", result);
         }
     }
     Ok(())
