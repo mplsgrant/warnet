@@ -15,25 +15,12 @@ start:
     #!/usr/bin/env bash
     set -euxo pipefail
 
-    # Mount local source dir
-    minikube mount $PWD:/mnt/src > /tmp/minikube_mount.log 2>&1 &
-
-    # Capture the PID of the minikube mount command
-    MINIKUBE_MOUNT_PID=$!
-
-    # Save the PID to a file for later use
-    echo $MINIKUBE_MOUNT_PID > /tmp/minikube_mount.pid
-
     # Setup k8s
     kubectl apply -f src/templates/rpc/namespace.yaml
     kubectl apply -f src/templates/rpc/rbac-config.yaml
     kubectl apply -f src/templates/rpc/warnet-rpc-service.yaml
     kubectl apply -f src/templates/rpc/warnet-rpc-statefulset-dev.yaml
     kubectl config set-context --current --namespace=warnet
-
-    echo waiting for rpc to come online
-    sleep 2
-    kubectl wait --for=condition=Ready --timeout=2m pod rpc-0
 
     echo Done...
 
