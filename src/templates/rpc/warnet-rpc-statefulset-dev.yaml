@@ -26,6 +26,6 @@ spec:
       volumes:
       - name: source-code
         hostPath:
-          path: /mnt/src
+          path: /home/grantpochmayer/warnet
           type: Directory
 
