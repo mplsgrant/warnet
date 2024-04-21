@@ -21,8 +21,8 @@ spec:
         ports:
         - containerPort: 9276
         volumeMounts:
-          - name: source-code
-            mountPath: /root/warnet
+        - name: source-code
+          mountPath: /root/warnet
       volumes:
       - name: source-code
         hostPath:
