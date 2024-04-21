@@ -27,5 +27,5 @@ spec:
       - name: source-code
         hostPath:
           path: /home/grantpochmayer/warnet
-          type: Directory
+          type: DirectoryOrCreate
 
