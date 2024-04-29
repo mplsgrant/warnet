@@ -110,7 +110,7 @@ class Server:
         self.logger = logging.getLogger("warnet")
 
         stream_handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(actime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(  '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         stream_handler.setFormatter(formatter)
         self.logger.addHandler(stream_handler)
 
