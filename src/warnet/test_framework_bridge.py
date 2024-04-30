@@ -55,7 +55,7 @@ class WarnetTestFramework(BitcoinTestFramework):
         self.log = logging.getLogger()
         self.log.setLevel(logging.INFO)  # set this to DEBUG to see ALL RPC CALLS
         ch = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter(fmt="%(message)s")
+        formatter = logging.Formatter(fmt=f"{self.options.network} - %(message)s")
         ch.setFormatter(formatter)
         self.log.addHandler(ch)
 
