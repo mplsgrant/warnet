@@ -51,13 +51,13 @@ class ComposeBackend(BackendInterface):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
             ) as process:
-                logger.debug(f"Running docker compose build with PID {process.pid}")
+                logger.debug(f"{self.network_name} - Running docker compose build with PID {process.pid}")
                 if process.stdout:
                     for line in process.stdout:
-                        logger.info(line.decode().rstrip())
+                        logger.info(f"{self.network_name} - {line.decode().rstrip()}")
         except Exception as e:
             logger.error(
-                f"An error occurred while executing `{' '.join(command)}` in {self.config_dir}: {e}"
+                f"{self.network_name} - An error occurred while executing `{' '.join(command)}` in {self.config_dir}: {e}"
             )
             return False
         return True
@@ -71,13 +71,13 @@ class ComposeBackend(BackendInterface):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
             ) as process:
-                logger.debug(f"Running docker compose up --detach with PID {process.pid}")
+                logger.debug(f"{self.network_name} - Running docker compose up --detach with PID {process.pid}")
                 if process.stdout:
                     for line in process.stdout:
-                        logger.info(line.decode().rstrip())
+                        logger.info(f"{self.network_name} - {line.decode().rstrip()}")
         except Exception as e:
             logger.error(
-                f"An error occurred while executing `{' '.join(command)}` in {self.config_dir}: {e}"
+                f"{self.network_name} - An error occurred while executing `{' '.join(command)}` in {self.config_dir}: {e}"
             )
 
     def down(self, warnet):
@@ -89,13 +89,13 @@ class ComposeBackend(BackendInterface):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
             ) as process:
-                logger.debug(f"Running 'docker compose down -v' with PID {process.pid}")
+                logger.debug(f"{self.network_name} - Running 'docker compose down -v' with PID {process.pid}")
                 if process.stdout:
                     for line in process.stdout:
-                        logger.info(line.decode().rstrip())
+                        logger.info(f"{self.network_name} - {line.decode().rstrip()}")
         except Exception as e:
             logger.error(
-                f"An error occurred while executing `{' '.join(command)}` in {self.config_dir}: {e}"
+                f"{self.network_name} - An error occurred while executing `{' '.join(command)}` in {self.config_dir}: {e}"
             )
 
     def get_container_name(self, tank_index: int, service: ServiceType) -> str:
@@ -213,7 +213,7 @@ class ComposeBackend(BackendInterface):
         containers = []
         for container in self.client.containers.list(filters={"network": network}):
             containers.append(container.name)
-        logger.debug(f"Got containers: {containers}")
+        logger.debug(f"{self.network_name} - Got containers: {containers}")
         return containers
 
     def logs_grep(self, pattern: str, network: str) -> str:
@@ -223,7 +223,7 @@ class ComposeBackend(BackendInterface):
         all_matching_logs: list[tuple[str, str]] = []
 
         for container_name in containers:
-            logger.debug(f"Fetching logs from {container_name}")
+            logger.debug(f"{self.network_name} - Fetching logs from {container_name}")
             logs = self.client.api.logs(
                 container=container_name,
                 stdout=True,
@@ -272,9 +272,9 @@ class ComposeBackend(BackendInterface):
         try:
             with open(docker_compose_path, "w") as file:
                 yaml.dump(compose, file)
-            logger.info(f"Wrote file: {docker_compose_path}")
+            logger.info(f"{self.network_name} - Wrote file: {docker_compose_path}")
         except Exception as e:
-            logger.error(f"An error occurred while writing to {docker_compose_path}: {e}")
+            logger.error(f"{self.network_name} - An error occurred while writing to {docker_compose_path}: {e}")
 
     def generate_deployment_file(self, warnet):
         self._write_docker_compose(warnet)
@@ -433,14 +433,14 @@ class ComposeBackend(BackendInterface):
             status[tank.index] = self.get_container_health(
                 self.get_container(tank.index, ServiceType.BITCOIN)
             )
-        logger.debug(f"Tank healthcheck: {status}")
+        logger.debug(f"{self.network_name} - Tank healthcheck: {status}")
 
         return status[0] == "healthy" and all(i == status[0] for i in status)
 
     def wait_for_healthy_tanks(self, warnet, timeout=60) -> bool:
         start = time.time()
         healthy = False
-        logger.debug("Waiting for all tanks to reach healthy")
+        logger.debug(f"{self.network_name} - Waiting for all tanks to reach healthy")
 
         while not healthy and (time.time() < start + timeout):
             healthy = self.check_health_all_bitcoind(warnet)
