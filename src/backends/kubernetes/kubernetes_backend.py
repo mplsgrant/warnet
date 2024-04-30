@@ -49,6 +49,11 @@ class KubernetesBackend(BackendInterface):
         self.network_name = network_name
         self.log = logger
 
+        stream_handler = logging.StreamHandler()
+        formatter = logging.Formatter(f'%(asctime)s - {self.network_name} - %(levelname)s - %(message)s')
+        stream_handler.setFormatter(formatter)
+        self.log.addHandler(stream_handler)
+
     def build(self) -> bool:
         # TODO: just return true for now, this is so we can be running either docker or k8s as a backend
         # on the same branch
