@@ -10,7 +10,7 @@ def cli_help():
 class EZTesting(WarnetTestFramework):
 
     def set_test_params(self):
-        pass
+        self.num_nodes = 0
 
     def run_test(self):
         while not self.warnet.network_connected():
