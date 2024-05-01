@@ -16,6 +16,10 @@ class LNInit(WarnetTestFramework):
         self.num_nodes = None
 
     def run_test(self):
+        while not self.warnet.network_connected():
+            self.log.info("Waiting for warnet connection")
+            sleep(1)
+
         self.log.info("Lock out of IBD")
         miner = ensure_miner(self.nodes[0])
         miner_addr = miner.getnewaddress()
