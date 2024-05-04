@@ -55,6 +55,10 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.wallet import MiniWallet
 
 
+def cli_help():
+    return "Test replacement cycling attacks against Lightning channels"
+
+
 def get_funding_redeemscript(funder_pubkey, fundee_pubkey):
     return CScript([OP_2, funder_pubkey.get_bytes(), fundee_pubkey.get_bytes(), OP_2, OP_CHECKMULTISIG])
 
