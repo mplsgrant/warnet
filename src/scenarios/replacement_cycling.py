@@ -7,6 +7,8 @@
 
 """Test replacement cyling attacks against Lightning channels"""
 
+import time
+
 from warnet.test_framework_bridge import WarnetTestFramework
 
 from test_framework.key import (
@@ -224,7 +226,9 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
         self.generate(alice, 501)
 
-        self.sync_all()
+        #self.sync_all()
+        # sync_all() simply waits until blocks and mempools become synced
+        time.sleep(4)
 
         self.connect_nodes(0, 1)
 
@@ -238,7 +242,8 @@ class ReplacementCyclingTest(WarnetTestFramework):
         # Propagate and confirm funding transaction.
         ab_funding_txid = alice.sendrawtransaction(hexstring=ab_funding_tx.serialize().hex(), maxfeerate=0)
 
-        self.sync_all()
+        #self.sync_all()
+        time.sleep(4)
 
         assert ab_funding_txid in alice.getrawmempool()
         assert ab_funding_txid in bob.getrawmempool()
@@ -272,7 +277,8 @@ class ReplacementCyclingTest(WarnetTestFramework):
         # We broadcast Alice - Bob commitment transaction.
         ab_commitment_txid = alice.sendrawtransaction(hexstring=ab_commitment_tx.serialize().hex(), maxfeerate=0)
 
-        self.sync_all()
+        #self.sync_all()
+        time.sleep(4)
 
         assert ab_commitment_txid in alice.getrawmempool()
         assert ab_commitment_txid in bob.getrawmempool()
@@ -287,7 +293,8 @@ class ReplacementCyclingTest(WarnetTestFramework):
         bob_parent_txid = bob.sendrawtransaction(hexstring=bob_parent_tx.serialize().hex(), maxfeerate=0)
         bob_child_txid = bob.sendrawtransaction(hexstring=bob_child_tx.serialize().hex(), maxfeerate=0)
 
-        self.sync_all()
+        #self.sync_all()
+        time.sleep(4)
 
         assert bob_parent_txid in alice.getrawmempool()
         assert bob_parent_txid in bob.getrawmempool()
