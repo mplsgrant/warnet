@@ -7,6 +7,8 @@
 
 """Test replacement cyling attacks against Lightning channels"""
 
+from warnet.test_framework_bridge import WarnetTestFramework
+
 from test_framework.key import (
     ECKey
 )
@@ -206,7 +208,7 @@ def create_chan_state(funding_txid, funding_vout, funder_seckey, fundee_seckey, 
     return (commitment_tx, offerer_timeout, receiver_preimage)
 
 
-class ReplacementCyclingTest(BitcoinTestFramework):
+class ReplacementCyclingTest(WarnetTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 2
