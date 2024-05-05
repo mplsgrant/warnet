@@ -236,7 +236,8 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
         wallet = self.wallet
 
-        self.log.info(f"balance: {wallet.get_balance()}")
+        self.log.debug(f"balance: {wallet.get_balance()}")
+        self.log.info("TEST LOG")
 
         # Generate funding transaction opening channel between Alice and Bob.
         ab_funding_tx = generate_funding_chan(wallet, coin_1, alice_seckey.get_pubkey(), bob_seckey.get_pubkey())
