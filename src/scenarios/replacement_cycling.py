@@ -230,7 +230,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         # sync_all() simply waits until blocks and mempools become synced
         time.sleep(4)
 
-        self.connect_nodes(0, 1, peer_advertises_v2=False)
+        self.connect_nodes(0, 1, peer_advertises_v2=True)
 
         coin_1 = self.wallet.get_utxo()
 
