@@ -230,14 +230,15 @@ class ReplacementCyclingTest(WarnetTestFramework):
         # sync_all() simply waits until blocks and mempools become synced
         time.sleep(16)
 
-        self.connect_nodes(0, 1, peer_advertises_v2=False)
+        # The nodes *should* already be connected
+        #self.connect_nodes(0, 1, peer_advertises_v2=False)
+
 
         coin_1 = self.wallet.get_utxo()
-
+        self.log.info(f"coin_1: {coin_1}")
         wallet = self.wallet
 
         self.log.info(f"balance: {wallet.get_balance()}")
-        self.log.info("TEST LOG")
 
         # Generate funding transaction opening channel between Alice and Bob.
         ab_funding_tx = generate_funding_chan(wallet, coin_1, alice_seckey.get_pubkey(), bob_seckey.get_pubkey())
