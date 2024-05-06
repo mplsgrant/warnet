@@ -598,7 +598,9 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         to_connection = self.nodes[b]
         from_num_peers = 1 + len(from_connection.getpeerinfo())
         to_num_peers = 1 + len(to_connection.getpeerinfo())
+        self.log.info(f"from_num_peers: {from_num_peers}; to_num_peers: {to_num_peers}")
         ip_port = "127.0.0.1:" + str(p2p_port(b))
+        self.log.info(f"ip_port: {ip_port}")
 
         if peer_advertises_v2 is None:
             peer_advertises_v2 = self.options.v2transport
