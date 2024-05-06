@@ -236,7 +236,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
         wallet = self.wallet
 
-        self.log.debug(f"balance: {wallet.get_balance()}")
+        self.log.info(f"balance: {wallet.get_balance()}")
         self.log.info("TEST LOG")
 
         # Generate funding transaction opening channel between Alice and Bob.
