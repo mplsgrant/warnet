@@ -50,7 +50,7 @@ from test_framework.script import (
     SIGHASH_ANYONECANPAY,
 )
 
-from test_framework.test_framework import BitcoinTestFramework
+from warnet.test_framework_bridge import WarnetTestFramework
 
 from test_framework.wallet import MiniWallet
 
@@ -202,7 +202,7 @@ def create_chan_state(funding_txid, funding_vout, funder_seckey, fundee_seckey, 
     return (commitment_tx, offerer_timeout, receiver_preimage)
 
 
-class ReplacementCyclingTest(BitcoinTestFramework):
+class ReplacementCyclingTest(WarnetTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 2
@@ -390,10 +390,11 @@ class ReplacementCyclingTest(BitcoinTestFramework):
         # Bob can repeat this replacement cycling trick until an inbound HTLC of Alice expires and double-spend her routed HTLCs.
 
     def run_test(self):
+        self.log.info("ez cycling: run_test")
         self.wallet = MiniWallet(self.nodes[0])
-
+        print("made minwallet")
         self.test_replacement_cycling()
-
+        self.log.info(("ez cycling done!"))
 
 if __name__ == '__main__':
     ReplacementCyclingTest().main()
