@@ -54,7 +54,7 @@ class ErrorMatch(Enum):
 
 
 class TestNode():
-    """A class for representing a bitcoind node under test.
+    """A class for representing a tank node under test.
 
     This class contains:
 
