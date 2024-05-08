@@ -86,6 +86,13 @@ class MiniWallet:
         self._utxos = []
         self._mode = mode
 
+        self.wallet_name = "mini_wallet"
+        wallets = self._test_node.listwallets()
+        if self.wallet_name not in wallets:
+            self._test_node.createwallet(self.wallet_name, descriptors=True)
+        temp_rpc = self._test_node.get_wallet_rpc(self.wallet_name)
+        self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {temp_rpc} {temp_rpc.rpc}")
+
         assert isinstance(mode, MiniWalletMode)
         if mode == MiniWalletMode.RAW_OP_TRUE:
             self._scriptPubKey = bytes(CScript([OP_TRUE]))
