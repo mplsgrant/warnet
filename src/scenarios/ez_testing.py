@@ -1,13 +1,12 @@
 from time import sleep
 
-from warnet.test_framework_bridge import WarnetTestFramework
-
+from test_framework.test_framework import BitcoinTestFramework
 
 def cli_help():
     return "Keepin' it EZ 🪄"
 
 
-class EZTesting(WarnetTestFramework):
+class EZTesting(BitcoinTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 0
