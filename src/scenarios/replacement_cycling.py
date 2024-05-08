@@ -395,8 +395,10 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
     def run_test(self):
         self.log.info("ez cycling: run_test")
+
         self.wallet = MiniWallet(self.nodes[0])
-        print("made minwallet")
+        self.log.info("made minwallet")
+
         self.test_replacement_cycling()
         self.log.info(("ez cycling done!"))
 
