@@ -9,6 +9,7 @@ from enum import Enum
 import argparse
 import logging
 import os
+import pathlib
 import platform
 import pdb
 import random
@@ -32,6 +33,7 @@ from .util import (
     assert_equal,
     check_json_precision,
     get_datadir_path,
+    get_rpc_proxy,
     initialize_datadir,
     p2p_port,
     wait_until_helper_internal,
@@ -275,6 +277,32 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         self.log.addHandler(ch)
 
         self.warnet = Warnet.from_network(self.options.network, "k8s") #self.options.backend)
+
+        for i, tank in enumerate(self.warnet.tanks):
+            ip = tank.ipv4
+            self.log.info(f"Adding TestNode {i} from tank {tank.index} with IP {ip}")
+            node = TestNode(
+                i,
+                pathlib.Path(),  # datadir path
+                chain=tank.bitcoin_network,
+                rpchost=ip,
+                timewait=60,
+                timeout_factor=self.options.timeout_factor,
+                bitcoind=None,
+                bitcoin_cli=None,
+                cwd=self.options.tmpdir,
+                coverage_dir=self.options.coveragedir,
+            )
+            node.rpc = get_rpc_proxy(
+                f"http://{tank.rpc_user}:{tank.rpc_password}@{ip}:{tank.rpc_port}",
+                i,
+                timeout=60,
+                coveragedir=self.options.coveragedir,
+            )
+            node.rpc_connected = True
+            self.nodes.append(node)
+
+        self.num_nodes = len(self.nodes)
 
         check_json_precision()
 
