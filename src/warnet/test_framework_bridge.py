@@ -7,6 +7,7 @@ import random
 import signal
 import sys
 import tempfile
+import time
 
 from test_framework.authproxy import AuthServiceProxy
 from test_framework.p2p import NetworkThread
@@ -38,7 +39,7 @@ class WarnetTestFramework(BitcoinTestFramework):
         pass
 
     def sync_all(self):
-        pass
+        time.sleep(4)
 
     def handle_sigterm(self, signum, frame):
         print("SIGTERM received, stopping...")
