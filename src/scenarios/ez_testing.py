@@ -1,5 +1,7 @@
 from time import sleep
 
+from scenarios.utils import ensure_miner
+
 from warnet.test_framework_bridge import WarnetTestFramework
 
 
@@ -16,6 +18,8 @@ class EZTesting(WarnetTestFramework):
         while not self.warnet.network_connected():
             self.log.info("Waiting for warnet connection")
             sleep(1)
+
+        ensure_miner(self.nodes[0])
 
         current_miner = 0
         self.log.info(f"Node count: {len(self.nodes)}")
