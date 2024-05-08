@@ -177,14 +177,15 @@ class TestNode():
         raise AssertionError(self._node_msg(msg))
 
     def __del__(self):
+        self.log.info(f"__del__ called on node {self.index} (this does nothing)")
         # Ensure that we don't leave any bitcoind processes lying around after
         # the test ends
-        if self.process and self.cleanup_on_exit:
-            # Should only happen on test failure
-            # Avoid using logger, as that may have already been shutdown when
-            # this destructor is called.
-            print(self._node_msg("Cleaning up leftover process"))
-            self.process.kill()
+        # if self.process and self.cleanup_on_exit:
+        #     # Should only happen on test failure
+        #     # Avoid using logger, as that may have already been shutdown when
+        #     # this destructor is called.
+        #     print(self._node_msg("Cleaning up leftover process"))
+        #     self.process.kill()
 
     def __getattr__(self, name):
         """Dispatches any unrecognised messages to the RPC connection or a CLI instance."""
@@ -196,6 +197,8 @@ class TestNode():
 
     def start(self, extra_args=None, *, cwd=None, stdout=None, stderr=None, env=None, **kwargs):
         """Start the node."""
+        self.log.info(f"test_node - start node {self.index} (it should already be started)")
+
         if extra_args is None:
             extra_args = self.extra_args
 
@@ -207,48 +210,48 @@ class TestNode():
         self.stderr = stderr
         self.stdout = stdout
 
-        if cwd is None:
-            cwd = self.cwd
+        # if cwd is None:
+        #     cwd = self.cwd
 
         # Delete any existing cookie file -- if such a file exists (eg due to
         # unclean shutdown), it will get overwritten anyway by bitcoind, and
         # potentially interfere with our attempt to authenticate
-        delete_cookie_file(self.datadir_path, self.chain)
+        #delete_cookie_file(self.datadir_path, self.chain)
 
         # add environment variable LIBC_FATAL_STDERR_=1 so that libc errors are written to stderr and not the terminal
-        subp_env = dict(os.environ, LIBC_FATAL_STDERR_="1")
-        if env is not None:
-            subp_env.update(env)
+        # subp_env = dict(os.environ, LIBC_FATAL_STDERR_="1")
+        # if env is not None:
+        #     subp_env.update(env)
 
-        self.process = subprocess.Popen(self.args + extra_args, env=subp_env, stdout=stdout, stderr=stderr, cwd=cwd, **kwargs)
+        # self.process = subprocess.Popen(self.args + extra_args, env=subp_env, stdout=stdout, stderr=stderr, cwd=cwd, **kwargs)
 
         self.running = True
-        self.log.debug("bitcoind started, waiting for RPC to come up")
+        # self.log.debug("bitcoind started, waiting for RPC to come up")
 
-        if self.start_perf:
-            self._start_perf()
+        # if self.start_perf:
+        #     self._start_perf()
 
     def wait_for_rpc_connection(self):
         """Sets up an RPC connection to the bitcoind process. Returns False if unable to connect."""
         # Poll at a rate of four times per second
         poll_per_s = 4
         for _ in range(poll_per_s * self.rpc_timeout):
-            if self.process.poll() is not None:
-                # Attach abrupt shutdown error/s to the exception message
-                self.stderr.seek(0)
-                str_error = ''.join(line.decode('utf-8') for line in self.stderr)
-                str_error += "************************\n" if str_error else ''
-
-                raise FailedToStartError(self._node_msg(
-                    f'bitcoind exited with status {self.process.returncode} during initialization. {str_error}'))
+            # if self.process.poll() is not None:
+            #     # Attach abrupt shutdown error/s to the exception message
+            #     self.stderr.seek(0)
+            #     str_error = ''.join(line.decode('utf-8') for line in self.stderr)
+            #     str_error += "************************\n" if str_error else ''
+            #
+            #     raise FailedToStartError(self._node_msg(
+            #         f'bitcoind exited with status {self.process.returncode} during initialization. {str_error}'))
             try:
-                rpc = get_rpc_proxy(
-                    rpc_url(self.datadir_path, self.index, self.chain, self.rpchost),
-                    self.index,
-                    timeout=self.rpc_timeout // 2,  # Shorter timeout to allow for one retry in case of ETIMEDOUT
-                    coveragedir=self.coverage_dir,
-                )
-                rpc.getblockcount()
+                # rpc = get_rpc_proxy(
+                #     rpc_url(self.datadir_path, self.index, self.chain, self.rpchost),
+                #     self.index,
+                #     timeout=self.rpc_timeout // 2,  # Shorter timeout to allow for one retry in case of ETIMEDOUT
+                #     coveragedir=self.coverage_dir,
+                # )
+                self.rpc.getblockcount()
                 # If the call to getblockcount() succeeds then the RPC connection is up
                 if self.version_is_at_least(190000):
                     # getmempoolinfo.loaded is available since commit
@@ -274,7 +277,7 @@ class TestNode():
                 self.log.debug("RPC successfully started")
                 if self.use_cli:
                     return
-                self.rpc = rpc
+                # self.rpc = rpc
                 self.rpc_connected = True
                 self.url = self.rpc.rpc_url
                 return
@@ -302,18 +305,19 @@ class TestNode():
 
     def wait_for_cookie_credentials(self):
         """Ensures auth cookie credentials can be read, e.g. for testing CLI with -rpcwait before RPC connection is up."""
-        self.log.debug("Waiting for cookie credentials")
-        # Poll at a rate of four times per second.
-        poll_per_s = 4
-        for _ in range(poll_per_s * self.rpc_timeout):
-            try:
-                get_auth_cookie(self.datadir_path, self.chain)
-                self.log.debug("Cookie credentials successfully retrieved")
-                return
-            except ValueError:  # cookie file not found and no rpcuser or rpcpassword; bitcoind is still starting
-                pass            # so we continue polling until RPC credentials are retrieved
-            time.sleep(1.0 / poll_per_s)
-        self._raise_assertion_error("Unable to retrieve cookie credentials after {}s".format(self.rpc_timeout))
+        self.log.info(f"someone called test_node {self.index}'s wait_for_cookie_credentials, but we don't do that here")
+        # self.log.debug("Waiting for cookie credentials")
+        # # Poll at a rate of four times per second.
+        # poll_per_s = 4
+        # for _ in range(poll_per_s * self.rpc_timeout):
+        #     try:
+        #         get_auth_cookie(self.datadir_path, self.chain)
+        #         self.log.debug("Cookie credentials successfully retrieved")
+        #         return
+        #     except ValueError:  # cookie file not found and no rpcuser or rpcpassword; bitcoind is still starting
+        #         pass            # so we continue polling until RPC credentials are retrieved
+        #     time.sleep(1.0 / poll_per_s)
+        # self._raise_assertion_error("Unable to retrieve cookie credentials after {}s".format(self.rpc_timeout))
 
     def generate(self, nblocks, maxtries=1000000, **kwargs):
         self.log.debug("TestNode.generate() dispatches `generate` call to `generatetoaddress`")
@@ -353,61 +357,66 @@ class TestNode():
 
     def stop_node(self, expected_stderr='', *, wait=0, wait_until_stopped=True):
         """Stop the node."""
-        if not self.running:
-            return
-        self.log.debug("Stopping node")
-        try:
-            # Do not use wait argument when testing older nodes, e.g. in wallet_backwards_compatibility.py
-            if self.version_is_at_least(180000):
-                self.stop(wait=wait)
-            else:
-                self.stop()
-        except http.client.CannotSendRequest:
-            self.log.exception("Unable to stop node.")
-
-        # If there are any running perf processes, stop them.
-        for profile_name in tuple(self.perf_subprocesses.keys()):
-            self._stop_perf(profile_name)
-
-        del self.p2ps[:]
-
-        assert (not expected_stderr) or wait_until_stopped  # Must wait to check stderr
-        if wait_until_stopped:
-            self.wait_until_stopped(expected_stderr=expected_stderr)
+        self.log.info(f"someone called test_node {self.index}'s stop_node function, but we don't do that here")
+        # if not self.running:
+        #     return
+        # self.log.debug("Stopping node")
+        # try:
+        #     # Do not use wait argument when testing older nodes, e.g. in wallet_backwards_compatibility.py
+        #     if self.version_is_at_least(180000):
+        #         self.stop(wait=wait)
+        #     else:
+        #         self.stop()
+        # except http.client.CannotSendRequest:
+        #     self.log.exception("Unable to stop node.")
+        #
+        # # If there are any running perf processes, stop them.
+        # for profile_name in tuple(self.perf_subprocesses.keys()):
+        #     self._stop_perf(profile_name)
+        #
+        # del self.p2ps[:]
+        #
+        # assert (not expected_stderr) or wait_until_stopped  # Must wait to check stderr
+        # if wait_until_stopped:
+        #     self.wait_until_stopped(expected_stderr=expected_stderr)
 
     def is_node_stopped(self, *, expected_stderr="", expected_ret_code=0):
         """Checks whether the node has stopped.
 
         Returns True if the node has stopped. False otherwise.
         This method is responsible for freeing resources (self.process)."""
-        if not self.running:
-            return True
-        return_code = self.process.poll()
-        if return_code is None:
-            return False
-
-        # process has stopped. Assert that it didn't return an error code.
-        assert return_code == expected_ret_code, self._node_msg(
-            f"Node returned unexpected exit code ({return_code}) vs ({expected_ret_code}) when stopping")
-        # Check that stderr is as expected
-        self.stderr.seek(0)
-        stderr = self.stderr.read().decode('utf-8').strip()
-        if stderr != expected_stderr:
-            raise AssertionError("Unexpected stderr {} != {}".format(stderr, expected_stderr))
-
-        self.stdout.close()
-        self.stderr.close()
-
-        self.running = False
-        self.process = None
-        self.rpc_connected = False
-        self.rpc = None
-        self.log.debug("Node stopped")
+        self.log.info(f"test_node {self.index}'s is_node_stopped function is not implemented")
         return True
 
+        # if not self.running:
+        #     return True
+        # return_code = self.process.poll()
+        # if return_code is None:
+        #     return False
+        #
+        # # process has stopped. Assert that it didn't return an error code.
+        # assert return_code == expected_ret_code, self._node_msg(
+        #     f"Node returned unexpected exit code ({return_code}) vs ({expected_ret_code}) when stopping")
+        # # Check that stderr is as expected
+        # self.stderr.seek(0)
+        # stderr = self.stderr.read().decode('utf-8').strip()
+        # if stderr != expected_stderr:
+        #     raise AssertionError("Unexpected stderr {} != {}".format(stderr, expected_stderr))
+        #
+        # self.stdout.close()
+        # self.stderr.close()
+        #
+        # self.running = False
+        # self.process = None
+        # self.rpc_connected = False
+        # self.rpc = None
+        # self.log.debug("Node stopped")
+        # return True
+
     def wait_until_stopped(self, *, timeout=BITCOIND_PROC_WAIT_TIMEOUT, expect_error=False, **kwargs):
-        expected_ret_code = 1 if expect_error else 0  # Whether node shutdown return EXIT_FAILURE or EXIT_SUCCESS
-        wait_until_helper_internal(lambda: self.is_node_stopped(expected_ret_code=expected_ret_code, **kwargs), timeout=timeout, timeout_factor=self.timeout_factor)
+        self.log.info(f"test_node {self.index}'s wait_until_stopped function is not implemented")
+        # expected_ret_code = 1 if expect_error else 0  # Whether node shutdown return EXIT_FAILURE or EXIT_SUCCESS
+        # wait_until_helper_internal(lambda: self.is_node_stopped(expected_ret_code=expected_ret_code, **kwargs), timeout=timeout, timeout_factor=self.timeout_factor)
 
     def replace_in_config(self, replacements):
         """
@@ -415,14 +424,15 @@ class TestNode():
         The substitutions are passed as a list of search-replace-tuples, e.g.
             [("old", "new"), ("foo", "bar"), ...]
         """
-        with open(self.bitcoinconf, 'r', encoding='utf8') as conf:
-            conf_data = conf.read()
-        for replacement in replacements:
-            assert_equal(len(replacement), 2)
-            old, new = replacement[0], replacement[1]
-            conf_data = conf_data.replace(old, new)
-        with open(self.bitcoinconf, 'w', encoding='utf8') as conf:
-            conf.write(conf_data)
+        self.log.info(f"test_node {self.index}'s replace_in_config function is not implemented")
+        # with open(self.bitcoinconf, 'r', encoding='utf8') as conf:
+        #     conf_data = conf.read()
+        # for replacement in replacements:
+        #     assert_equal(len(replacement), 2)
+        #     old, new = replacement[0], replacement[1]
+        #     conf_data = conf_data.replace(old, new)
+        # with open(self.bitcoinconf, 'w', encoding='utf8') as conf:
+        #     conf.write(conf_data)
 
     @property
     def chain_path(self) -> Path:
@@ -441,12 +451,14 @@ class TestNode():
         return self.chain_path / "wallets"
 
     def debug_log_size(self, **kwargs) -> int:
+        self.log.info(f"test_node {self.index}'s debug_log_size function called")
         with open(self.debug_log_path, **kwargs) as dl:
             dl.seek(0, 2)
             return dl.tell()
 
     @contextlib.contextmanager
     def assert_debug_log(self, expected_msgs, unexpected_msgs=None, timeout=2):
+        self.log.info(f"test_node {self.index}'s assert_debug_log function called")
         if unexpected_msgs is None:
             unexpected_msgs = []
         assert_equal(type(expected_msgs), list)
@@ -483,6 +495,7 @@ class TestNode():
         Return:
             the number of log lines we encountered when matching
         """
+        self.log.info(f"test_node {self.index}'s wait_for_debug_log function called")
         time_end = time.time() + timeout * self.timeout_factor
         prev_size = self.debug_log_size(mode="rb")  # Must use same mode that is used to read() below
 
@@ -523,6 +536,7 @@ class TestNode():
             profile_name: This string will be appended to the
                 profile data filename generated by perf.
         """
+        self.log.info(f"test_node {self.index}'s profile_with_perf function called")
         subp = self._start_perf(profile_name)
 
         yield
@@ -534,6 +548,8 @@ class TestNode():
         """Start a perf process to profile this node.
 
         Returns the subprocess running perf."""
+        self.log.info(f"test_node {self.index}'s _start_perf function called")
+
         subp = None
 
         def test_success(cmd):
@@ -575,6 +591,8 @@ class TestNode():
 
     def _stop_perf(self, profile_name):
         """Stop (and pop) a perf subprocess."""
+        self.log.info(f"test_node {self.index}'s _stop_perf function called")
+
         subp = self.perf_subprocesses.pop(profile_name)
         output_path = subp.args[subp.args.index('-o') + 1]
 
@@ -598,6 +616,8 @@ class TestNode():
 
         Will throw if bitcoind starts without an error.
         Will throw if an expected_msg is provided and it does not match bitcoind's stdout."""
+        self.log.info(f"test_node {self.index}'s assert_start_raises_init_error function called")
+
         assert not self.running
         with tempfile.NamedTemporaryFile(dir=self.stderr_dir, delete=False) as log_stderr, \
              tempfile.NamedTemporaryFile(dir=self.stdout_dir, delete=False) as log_stdout:
@@ -640,6 +660,8 @@ class TestNode():
 
         This method adds the p2p connection to the self.p2ps list and also
         returns the connection to the caller."""
+        self.log.info(f"test_node {self.index}'s add_p2p_connection function called")
+
         if 'dstport' not in kwargs:
             kwargs['dstport'] = p2p_port(self.index)
         if 'dstaddr' not in kwargs:
@@ -685,6 +707,7 @@ class TestNode():
         after disconnecting the previous one, it is necessary to wait for the disconnect to finish to avoid
         a race condition.
         """
+        self.log.info(f"test_node {self.index}'s add_outbound_p2p_connection function called")
 
         def addconnection_callback(address, port):
             self.log.debug("Connecting to %s:%d %s" % (address, port, connection_type))
@@ -708,11 +731,15 @@ class TestNode():
 
     def num_test_p2p_connections(self):
         """Return number of test framework p2p connections to the node."""
+        self.log.info(f"test_node {self.index}'s num_test_p2p_connections function called")
+
         return len([peer for peer in self.getpeerinfo() if peer['subver'] == P2P_SUBVERSION])
 
     def disconnect_p2ps(self):
         """Close all p2p connections to the node.
         Use only after each p2p has sent a version message to ensure the wait works."""
+        self.log.info(f"test_node {self.index}'s disconnect_p2ps function called")
+
         for p in self.p2ps:
             p.peer_disconnect()
         del self.p2ps[:]
@@ -814,14 +841,17 @@ class RPCOverloadWrapper():
         return getattr(self.rpc, name)
 
     def createwallet_passthrough(self, *args, **kwargs):
+        self.log.info(f"test_node {self.index}'s createwallet_passthrough function called")
         return self.__getattr__("createwallet")(*args, **kwargs)
 
     def createwallet(self, wallet_name, disable_private_keys=None, blank=None, passphrase='', avoid_reuse=None, descriptors=None, load_on_startup=None, external_signer=None):
+        self.log.info(f"test_node {self.index}'s createwallet function called")
         if descriptors is None:
             descriptors = self.descriptors
         return self.__getattr__('createwallet')(wallet_name, disable_private_keys, blank, passphrase, avoid_reuse, descriptors, load_on_startup, external_signer)
 
     def importprivkey(self, privkey, label=None, rescan=None):
+        self.log.info(f"test_node {self.index}'s importprivkey function called")
         wallet_info = self.getwalletinfo()
         if 'descriptors' not in wallet_info or ('descriptors' in wallet_info and not wallet_info['descriptors']):
             return self.__getattr__('importprivkey')(privkey, label, rescan)
@@ -836,6 +866,7 @@ class RPCOverloadWrapper():
             raise JSONRPCException(import_res[0]['error'])
 
     def addmultisigaddress(self, nrequired, keys, label=None, address_type=None):
+        self.log.info(f"test_node {self.index}'s addmultisigaddress function called")
         wallet_info = self.getwalletinfo()
         if 'descriptors' not in wallet_info or ('descriptors' in wallet_info and not wallet_info['descriptors']):
             return self.__getattr__('addmultisigaddress')(nrequired, keys, label, address_type)
@@ -851,6 +882,7 @@ class RPCOverloadWrapper():
         return cms
 
     def importpubkey(self, pubkey, label=None, rescan=None):
+        self.log.info(f"test_node {self.index}'s importpubkey function called")
         wallet_info = self.getwalletinfo()
         if 'descriptors' not in wallet_info or ('descriptors' in wallet_info and not wallet_info['descriptors']):
             return self.__getattr__('importpubkey')(pubkey, label, rescan)
@@ -865,6 +897,7 @@ class RPCOverloadWrapper():
             raise JSONRPCException(import_res[0]['error'])
 
     def importaddress(self, address, label=None, rescan=None, p2sh=None):
+        self.log.info(f"test_node {self.index}'s importaddress function called")
         wallet_info = self.getwalletinfo()
         if 'descriptors' not in wallet_info or ('descriptors' in wallet_info and not wallet_info['descriptors']):
             return self.__getattr__('importaddress')(address, label, rescan, p2sh)
