@@ -59,15 +59,8 @@ from warnet.test_framework_bridge import WarnetTestFramework
 from test_framework.wallet import MiniWallet
 
 
-<<<<<<< HEAD
 def cli_help():
     return "Test replacement cycling attacks against Lightning channels"
-
-=======
-
-def cli_help():
-    return "Replacement cycling"
->>>>>>> ez_cycling
 
 def get_funding_redeemscript(funder_pubkey, fundee_pubkey):
     return CScript([OP_2, funder_pubkey.get_bytes(), fundee_pubkey.get_bytes(), OP_2, OP_CHECKMULTISIG])
