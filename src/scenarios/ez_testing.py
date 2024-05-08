@@ -12,6 +12,7 @@ class EZTesting(BitcoinTestFramework):
         self.num_nodes = 0
 
     def run_test(self):
+        self.log.info("Running EZTesting")
         while not self.warnet.network_connected():
             self.log.info("Waiting for warnet connection")
             sleep(1)
