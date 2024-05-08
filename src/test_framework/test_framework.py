@@ -14,6 +14,7 @@ import pdb
 import random
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -244,8 +245,15 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             )
             setattr(self.options, attribute_name, os.getenv(env_variable_name, default=default_filename))
 
+    def handle_sigterm(self, signum, frame):
+        print("SIGTERM received, stopping...")
+        self.shutdown()
+        sys.exit(0)
+
     def setup(self):
         """Call this method to start up the test framework object with options set."""
+
+        signal.signal(signal.SIGTERM, self.handle_sigterm)
 
         check_json_precision()
 
