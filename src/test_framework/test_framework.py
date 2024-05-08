@@ -219,7 +219,11 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         self.options.previous_releases_path = previous_releases_path
 
         config = configparser.ConfigParser()
-        config.read_file(open(self.options.configfile))
+        if self.options.configfile is not None:
+            with open(self.options.configfile) as f:
+                config.read_file(f)
+
+        config["environment"] = {"PACKAGE_BUGREPORT": ""}
         self.config = config
 
         if "descriptors" not in self.options:
