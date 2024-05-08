@@ -54,14 +54,20 @@ from test_framework.script import (
     SIGHASH_ANYONECANPAY,
 )
 
-from test_framework.test_framework import BitcoinTestFramework
+from warnet.test_framework_bridge import WarnetTestFramework
 
 from test_framework.wallet import MiniWallet
 
 
+<<<<<<< HEAD
 def cli_help():
     return "Test replacement cycling attacks against Lightning channels"
 
+=======
+
+def cli_help():
+    return "Replacement cycling"
+>>>>>>> ez_cycling
 
 def get_funding_redeemscript(funder_pubkey, fundee_pubkey):
     return CScript([OP_2, funder_pubkey.get_bytes(), fundee_pubkey.get_bytes(), OP_2, OP_CHECKMULTISIG])
@@ -407,10 +413,16 @@ class ReplacementCyclingTest(WarnetTestFramework):
         # Bob can repeat this replacement cycling trick until an inbound HTLC of Alice expires and double-spend her routed HTLCs.
 
     def run_test(self):
+        self.log.info("ez cycling: run_test")
+
+        for node in self.nodes:
+            self.log.info(f"node: {node}")
+
         self.wallet = MiniWallet(self.nodes[0])
+        self.log.info("made minwallet")
 
         self.test_replacement_cycling()
-
+        self.log.info(("ez cycling done!"))
 
 if __name__ == '__main__':
     ReplacementCyclingTest().main()

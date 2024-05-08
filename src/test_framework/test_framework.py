@@ -672,6 +672,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
 
     def start_node(self, i, *args, **kwargs):
         """Start a bitcoind"""
+        self.log.info(f"test_framework - start_node {i}")
 
         node = self.nodes[i]
 
