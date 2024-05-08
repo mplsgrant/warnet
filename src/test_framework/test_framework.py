@@ -255,6 +255,13 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
 
         signal.signal(signal.SIGTERM, self.handle_sigterm)
 
+        self.log = logging.getLogger()
+        self.log.setLevel(logging.INFO)  # set this to DEBUG to see ALL RPC CALLS
+        ch = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter(fmt="%(message)s")
+        ch.setFormatter(formatter)
+        self.log.addHandler(ch)
+
         check_json_precision()
 
         self.options.cachedir = os.path.abspath(self.options.cachedir)
