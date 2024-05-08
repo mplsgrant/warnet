@@ -224,7 +224,8 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
         self.sync_all()
 
-        self.connect_nodes(0, 1)
+        # We can't connect nodes
+        #self.connect_nodes(0, 1)
 
         coin_1 = self.wallet.get_utxo()
 
