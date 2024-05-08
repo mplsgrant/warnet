@@ -266,7 +266,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
 
     def setup(self):
         """Call this method to start up the test framework object with options set."""
-
+        self.log.info("test_framework - beginning setup")
         signal.signal(signal.SIGTERM, self.handle_sigterm)
 
         self.log = logging.getLogger()

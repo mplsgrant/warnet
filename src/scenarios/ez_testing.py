@@ -9,7 +9,7 @@ def cli_help():
 class EZTesting(BitcoinTestFramework):
 
     def set_test_params(self):
-        self.num_nodes = 0
+        self.num_nodes = 1
 
     def run_test(self):
         self.log.info("Running EZTesting")
