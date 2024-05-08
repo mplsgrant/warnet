@@ -225,12 +225,11 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
         self.generate(alice, 501)
 
-        #self.sync_all()
+        self.sync_all()
         # sync_all() simply waits until blocks and mempools become synced
-        time.sleep(16)
 
         # The nodes *should* already be connected
-        #self.connect_nodes(0, 1, peer_advertises_v2=False)
+        self.connect_nodes(0, 1, peer_advertises_v2=False)
 
 
         coin_1 = self.wallet.get_utxo()
