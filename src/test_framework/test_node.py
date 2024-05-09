@@ -838,6 +838,8 @@ class RPCOverloadWrapper():
         self.is_cli = cli
         self.descriptors = descriptors
         self.log = logging.getLogger("RPCOverloadWrapper")
+        self.log.info(f"RPCOverloadWrapper: {self.rpc.rpc_url} cli: {self.is_cli} desc: {self.descriptors}")
+
 
     def __getattr__(self, name):
         return getattr(self.rpc, name)
