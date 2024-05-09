@@ -187,6 +187,7 @@ class MiniWallet:
 
     def generate(self, num_blocks, **kwargs):
         """Generate blocks with coinbase outputs to the internal address, and call rescan_utxos"""
+        self._test_node.log.info(f"wallet - generate - {num_blocks} to {self._address}")
         self._test_node.generatetoaddress(num_blocks, self._address, invalid_call=False)
         #blocks = self._test_node.generatetodescriptor(num_blocks, self.get_descriptor(), **kwargs)
         # Calling rescan_utxos here makes sure that after a generate the utxo
@@ -218,7 +219,7 @@ class MiniWallet:
         """
         if len(self._utxos) == 0:
             self._test_node.log.info(f"{self._test_node.index} Could not find any utxos. Generating, then sleeping for 20...")
-            self.generate(100)
+            self.generate(101)
             time.sleep(20)
         self._utxos = sorted(self._utxos, key=lambda k: (k['value'], -k['height']))  # Put the largest utxo last
         blocks_height = self._test_node.getblockchaininfo()['blocks']
