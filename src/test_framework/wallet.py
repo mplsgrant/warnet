@@ -216,8 +216,8 @@ class MiniWallet:
         txid: get the first utxo we find from a specific transaction
         """
         if len(self._utxos) == 0:
-            self._test_node.log.info(f"{self._test_node.index} Could not find any utxos. Scanning, then sleeping for 20...")
-            self.rescan_utxos()
+            self._test_node.log.info(f"{self._test_node.index} Could not find any utxos. Generating, then sleeping for 20...")
+            self.generate(100)
             time.sleep(20)
         self._utxos = sorted(self._utxos, key=lambda k: (k['value'], -k['height']))  # Put the largest utxo last
         blocks_height = self._test_node.getblockchaininfo()['blocks']
