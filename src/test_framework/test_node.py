@@ -350,6 +350,7 @@ class TestNode():
         else:
             assert self.rpc_connected and self.rpc, self._node_msg("RPC not connected")
             wallet_path = "wallet/{}".format(urllib.parse.quote(wallet_name))
+            self.log.info(f"get_wallet_rpc wallet_path: {wallet_path}")
             return RPCOverloadWrapper(self.rpc / wallet_path, descriptors=self.descriptors)
 
     def version_is_at_least(self, ver):
