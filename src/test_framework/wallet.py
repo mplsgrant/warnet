@@ -255,6 +255,8 @@ class MiniWallet:
             utxo_filter = filter(lambda utxo: vout == utxo['vout'], utxo_filter)
         if confirmed_only:
             utxo_filter = filter(lambda utxo: utxo['confirmations'] > 0, utxo_filter)
+        self._test_node.log.info(f"utxo_filer: {print(utxo_filter)}")
+        self._test_node.log.info(f"utxos: {print(self._utxos)}")
         index = self._utxos.index(next(utxo_filter))
         if mark_as_spent:
             return self._utxos.pop(index)

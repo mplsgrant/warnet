@@ -215,22 +215,23 @@ class ReplacementCyclingTest(WarnetTestFramework):
         self.num_nodes = 2
 
     def test_replacement_cycling(self):
+        self.log.info("making alice's keys")
         alice = self.nodes[0]
         alice_seckey = ECKey()
         alice_seckey.generate(True)
 
+        self.log.info("making bob's keys")
         bob = self.nodes[1]
         bob_seckey = ECKey()
         bob_seckey.generate(True)
 
+        self.log.info("generating alice blocks")
         self.generate(alice, 501)
 
         self.sync_all()
-        # sync_all() simply waits until blocks and mempools become synced
 
         # The nodes *should* already be connected
         self.connect_nodes(0, 1, peer_advertises_v2=False)
-
 
         coin_1 = self.wallet.get_utxo()
         self.log.info(f"coin_1: {coin_1}")
