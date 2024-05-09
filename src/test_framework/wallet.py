@@ -95,7 +95,8 @@ class MiniWallet:
 
         # sweep private key from test_node
         privkey = self._test_node.get_deterministic_priv_key()
-        self._test_node.log.info(f"privkey: {privkey}")
+        self._test_node.log.info(f"privkey: {privkey.key}")
+        self._test_node.importprivkey(privkey.key, "deterministic_key", true)
 
         assert isinstance(mode, MiniWalletMode)
         if mode == MiniWalletMode.RAW_OP_TRUE:
