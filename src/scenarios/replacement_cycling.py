@@ -234,7 +234,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         self.connect_nodes(0, 1, peer_advertises_v2=False)
 
         coin_1 = self.wallet.get_utxo()
-        self.log.info(f"coin_1: {coin_1}")
+        self.log.info(f"coin_1: {print(coin_1)}")
         wallet = self.wallet
 
         self.log.info(f"balance: {wallet.get_balance()}")
