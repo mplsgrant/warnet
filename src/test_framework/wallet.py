@@ -7,6 +7,7 @@
 from copy import deepcopy
 from decimal import Decimal
 from enum import Enum
+import time
 from typing import (
     Any,
     List,
@@ -127,6 +128,7 @@ class MiniWallet:
         # for those mature UTXOs, so that all txs spend confirmed coins
         self.rescan_utxos()
 
+
     def _create_utxo(self, *, txid, vout, value, height, coinbase, confirmations):
         return {"txid": txid, "vout": vout, "value": value, "height": height, "coinbase": coinbase, "confirmations": confirmations}
 
@@ -147,6 +149,8 @@ class MiniWallet:
 
     def rescan_utxos(self, *, include_mempool=True):
         """Drop all utxos and rescan the utxo set"""
+        self._test_node.log.info("rescan_utxos: sleep for 5")
+        time.sleep(5)
         self._test_node.log.info(f"wallet - rescan_utxos - node {self._test_node.index}")
         self._utxos = []
         res = self._test_node.scantxoutset(action="start", scanobjects=[self.get_descriptor()])
@@ -165,6 +169,9 @@ class MiniWallet:
             sorted_mempool = sorted(mempool.items(), key=lambda item: (item[1]["ancestorcount"], int(item[0], 16)))
             for txid, _ in sorted_mempool:
                 self.scan_tx(self._test_node.getrawtransaction(txid=txid, verbose=True))
+
+        self._test_node.log.info("rescan_utxos: sleep for 10")
+        time.sleep(10)
 
     def scan_tx(self, tx):
         """Scan the tx and adjust the internal list of owned utxos"""

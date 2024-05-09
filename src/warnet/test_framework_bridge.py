@@ -39,7 +39,8 @@ class WarnetTestFramework(BitcoinTestFramework):
         pass
 
     def sync_all(self):
-        time.sleep(4)
+        self.log.info("sync_all: sleeping for 20 seconds")
+        time.sleep(20)
 
     def handle_sigterm(self, signum, frame):
         print("SIGTERM received, stopping...")
