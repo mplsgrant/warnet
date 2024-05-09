@@ -90,10 +90,11 @@ class MiniWallet:
 
         self.wallet_name = "mini_wallet"
         wallets = self._test_node.listwallets()
+        self._test_node.log.info(f"list wallets: {print(wallets)}")
         if self.wallet_name not in wallets:
             self._test_node.createwallet(self.wallet_name, descriptors=True)
         temp_rpc = self._test_node.get_wallet_rpc(self.wallet_name)
-        self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {print(temp_rpc)} {print(temp_rpc.rpc)}")
+        self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {print(temp_rpc)} {print(temp_rpc.rpc_url)}")
 
         #self._test_node.loadwallet(self.wallet_name)
 
