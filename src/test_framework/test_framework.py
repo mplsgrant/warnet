@@ -131,9 +131,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         assert hasattr(self, "num_nodes"), "Test must set self.num_nodes in set_test_params()"
 
         try:
-            print("Trying setup")
             self.setup()
-            print("Trying run_test")
             self.run_test()
         except JSONRPCException:
             self.log.exception("JSONRPC error")
