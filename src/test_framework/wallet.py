@@ -93,6 +93,7 @@ class MiniWallet:
         wallets = self._test_node.listwallets()
         self._test_node.log.info(f"list wallets: {print(wallets)}")
         if self.wallet_name not in wallets:
+            self._test_node.log.info(f"creating wallet: {self.wallet_name}")
             self._test_node.createwallet(self.wallet_name, descriptors=True)
         temp_rpc = self._test_node.get_wallet_rpc(self.wallet_name)
         self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {temp_rpc.rpc.rpc_url}")
@@ -219,6 +220,7 @@ class MiniWallet:
 
     def generate(self, num_blocks, **kwargs):
         """Generate blocks with coinbase outputs to the internal address, and call rescan_utxos"""
+        self._test_node.log.info(f"wallet.generate generating: {num_blocks} blocks")
         blocks = self._test_node.generatetodescriptor(num_blocks, self.get_descriptor(), **kwargs)
         # Calling rescan_utxos here makes sure that after a generate the utxo
         # set is in a clean state. For example, the wallet will update
