@@ -217,6 +217,7 @@ class MiniWallet:
         """
         self._utxos = sorted(self._utxos, key=lambda k: (k['value'], -k['height']))  # Put the largest utxo last
         blocks_height = self._test_node.getblockchaininfo()['blocks']
+        self._test_node.log.info(f"get_utxo block height: {blocks_height}")
         mature_coins = list(filter(lambda utxo: not utxo['coinbase'] or COINBASE_MATURITY - 1 <= blocks_height - utxo['height'], self._utxos))
         if txid:
             utxo_filter: Any = filter(lambda utxo: txid == utxo['txid'], self._utxos)
