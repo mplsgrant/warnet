@@ -332,6 +332,7 @@ class TestNode():
         return self.__getattr__('generatetoaddress')(*args, **kwargs)
 
     def generatetodescriptor(self, *args, invalid_call, **kwargs):
+        self.log.info("test_node - generatetodescriptor")
         assert not invalid_call
         return self.__getattr__('generatetodescriptor')(*args, **kwargs)
 

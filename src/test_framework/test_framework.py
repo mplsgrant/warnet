@@ -834,6 +834,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         return blocks
 
     def generatetodescriptor(self, generator, *args, sync_fun=None, **kwargs):
+        self.log.info("test_framework - generatetodescriptor")
         blocks = generator.generatetodescriptor(*args, invalid_call=False, **kwargs)
         sync_fun() if sync_fun else self.sync_all()
         return blocks
