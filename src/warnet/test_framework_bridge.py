@@ -141,7 +141,7 @@ class WarnetTestFramework(BitcoinTestFramework):
         # self.skip_test_if_missing_module()
         # self.setup_chain()
         # self.setup_network()
-        self.generatetoaddress(101, "bcrt1p9yfmy5h72durp7zrhlw9lf7jpwjgvwdg0jr0lqmmjtgg83266lqsekaqka")
+        self.generatetoaddress(self.nodes[0], "bcrt1p9yfmy5h72durp7zrhlw9lf7jpwjgvwdg0jr0lqmmjtgg83266lqsekaqka")
 
         self.success = TestStatus.PASSED
 
