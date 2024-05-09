@@ -86,6 +86,8 @@ class MiniWallet:
         self._utxos = []
         self._mode = mode
 
+        self._test_node.log.info(f"MiniWallet test_node rpc: {self._test_node.rpc}")
+
         self.wallet_name = "mini_wallet"
         wallets = self._test_node.listwallets()
         if self.wallet_name not in wallets:
