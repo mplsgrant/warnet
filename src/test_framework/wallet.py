@@ -103,6 +103,9 @@ class MiniWallet:
         privkey = self._test_node.get_deterministic_priv_key()
         self._test_node.log.info(f"privkey: {privkey.key}")
         self._test_node.importprivkey(privkey.key, "deterministic_key", 1)
+        self._test_node.rescanblockchain()
+        balances = self._test_node.getbalances()
+        self._test_node.log.info(f"blances {print(balances)}")
 
         assert isinstance(mode, MiniWalletMode)
         if mode == MiniWalletMode.RAW_OP_TRUE:
