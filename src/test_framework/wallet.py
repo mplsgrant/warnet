@@ -91,7 +91,11 @@ class MiniWallet:
         if self.wallet_name not in wallets:
             self._test_node.createwallet(self.wallet_name, descriptors=True)
         temp_rpc = self._test_node.get_wallet_rpc(self.wallet_name)
-        self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {temp_rpc} {temp_rpc.rpc}")
+        self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {print(temp_rpc)} {print(temp_rpc.rpc)}")
+
+        # sweep private key from test_node
+        privkey = self.get_deterministic_priv_key()
+        self._test_node.log.info(f"privkey: {privkey}")
 
         assert isinstance(mode, MiniWalletMode)
         if mode == MiniWalletMode.RAW_OP_TRUE:
