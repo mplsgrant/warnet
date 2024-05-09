@@ -105,7 +105,7 @@ class MiniWallet:
         self._test_node.log.info(f"privkey: {privkey.key}")
         self._test_node.importprivkey(privkey.key, "deterministic_key", 1)
         self._test_node.rescanblockchain()
-        self._test_node.log("rescanning blockchain; sleeping for 10 seconds")
+        self._test_node.log.info("rescanning blockchain; sleeping for 10 seconds")
         time.sleep(10)
         balances = self._test_node.getbalances()
         self._test_node.log.info(f"balances {print(balances)}")
