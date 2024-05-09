@@ -94,8 +94,9 @@ class MiniWallet:
         if self.wallet_name not in wallets:
             self._test_node.createwallet(self.wallet_name, descriptors=True)
         temp_rpc = self._test_node.get_wallet_rpc(self.wallet_name)
-        self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {print(temp_rpc)} {print(temp_rpc.rpc_url)}")
-
+        self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {temp_rpc.rpc.rpc_url}")
+        self.rpc = temp_rpc.rpc
+        
         #self._test_node.loadwallet(self.wallet_name)
 
         # sweep private key from test_node
