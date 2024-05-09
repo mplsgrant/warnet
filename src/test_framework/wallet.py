@@ -133,7 +133,7 @@ class MiniWallet:
 
     def rescan_utxos(self, *, include_mempool=True):
         """Drop all utxos and rescan the utxo set"""
-        self._test_node.log.info(f"wallet - rescan_utxos for test_node {self._test_node.index}")
+        self._test_node.log.info(f"wallet - rescan_utxos - node {self._test_node.index}")
         self._utxos = []
         res = self._test_node.scantxoutset(action="start", scanobjects=[self.get_descriptor()])
         assert_equal(True, res['success'])
