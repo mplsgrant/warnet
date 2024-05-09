@@ -93,7 +93,7 @@ class MiniWallet:
         temp_rpc = self._test_node.get_wallet_rpc(self.wallet_name)
         self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {print(temp_rpc)} {print(temp_rpc.rpc)}")
 
-        self._test_node.loadwallet(self.wallet_name)
+        #self._test_node.loadwallet(self.wallet_name)
 
         # sweep private key from test_node
         privkey = self._test_node.get_deterministic_priv_key()
