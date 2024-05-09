@@ -7,56 +7,40 @@
 
 """Test replacement cyling attacks against Lightning channels"""
 
-import time
 
-from warnet.test_framework_bridge import WarnetTestFramework
-
-from test_framework.key import (
-    ECKey
-)
-
+from test_framework.key import ECKey
 from test_framework.messages import (
+    COIN,
+    COutPoint,
     CTransaction,
     CTxIn,
     CTxInWitness,
     CTxOut,
-    COutPoint,
     sha256,
-    COIN,
-    tx_from_hex,
 )
-
-from test_framework.util import (
-    assert_equal
-)
-
 from test_framework.script import (
-    CScript,
-    hash160,
-    OP_IF,
-    OP_HASH160,
-    OP_EQUAL,
-    OP_ELSE,
-    OP_ENDIF,
-    OP_CHECKSIG,
-    OP_SWAP,
-    OP_SIZE,
-    OP_NOTIF,
-    OP_DROP,
-    OP_CHECKMULTISIG,
-    OP_EQUALVERIFY,
     OP_0,
     OP_2,
+    OP_CHECKMULTISIG,
+    OP_CHECKSIG,
+    OP_DROP,
+    OP_ELSE,
+    OP_ENDIF,
+    OP_EQUAL,
+    OP_EQUALVERIFY,
+    OP_HASH160,
+    OP_NOTIF,
+    OP_SIZE,
+    OP_SWAP,
     OP_TRUE,
-    SegwitV0SignatureHash,
     SIGHASH_ALL,
-    SIGHASH_SINGLE,
-    SIGHASH_ANYONECANPAY,
+    CScript,
+    SegwitV0SignatureHash,
+    hash160,
 )
-
-from warnet.test_framework_bridge import WarnetTestFramework
-
+from test_framework.util import assert_equal
 from test_framework.wallet import MiniWallet
+from warnet.test_framework_bridge import WarnetTestFramework
 
 
 def cli_help():
@@ -302,7 +286,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         block = alice.getblock(lastblockhash)
         blockheight_print = block['height']
 
-        self.log.info("Alice broadcasts her HTLC timeout transaction at block height {}".format(blockheight_print))
+        self.log.info(f"Alice broadcasts her HTLC timeout transaction at block height {blockheight_print}")
 
         # Broadcast the Alice timeout transaction
         alice_timeout_txid = alice.sendrawtransaction(hexstring=alice_timeout_tx.serialize().hex(), maxfeerate=0)
@@ -321,13 +305,13 @@ class ReplacementCyclingTest(WarnetTestFramework):
         assert bob_preimage_txid in bob.getrawmempool()
 
         self.log.info(
-            "Bob broadcasts his HTLC preimage transaction at block height {} to replace".format(blockheight_print))
+            f"Bob broadcasts his HTLC preimage transaction at block height {blockheight_print} to replace")
 
         # Check Alice timeout transaction and Bob child tx are not in the mempools anymore
-        assert not alice_timeout_txid in alice.getrawmempool()
-        assert not alice_timeout_txid in bob.getrawmempool()
-        assert not bob_child_txid in alice.getrawmempool()
-        assert not bob_child_txid in bob.getrawmempool()
+        assert alice_timeout_txid not in alice.getrawmempool()
+        assert alice_timeout_txid not in bob.getrawmempool()
+        assert bob_child_txid not in alice.getrawmempool()
+        assert bob_child_txid not in bob.getrawmempool()
 
         # Generate a higher fee parent transaction and broadcast it to replace Bob preimage tx
         (bob_replacement_parent_tx, bob_child_tx) = generate_parent_child_tx(wallet, coin_2, parent_seckey.get_pubkey(),
@@ -339,8 +323,8 @@ class ReplacementCyclingTest(WarnetTestFramework):
         self.sync_all()
 
         # Check Bob HTLC preimage is not in the mempools anymore
-        assert not bob_preimage_txid in alice.getrawmempool()
-        assert not bob_preimage_txid in bob.getrawmempool()
+        assert bob_preimage_txid not in alice.getrawmempool()
+        assert bob_preimage_txid not in bob.getrawmempool()
         assert bob_replacement_parent_txid in alice.getrawmempool()
         assert bob_replacement_parent_txid in alice.getrawmempool()
 
@@ -366,7 +350,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         block = alice.getblock(lastblockhash)
         blockheight_print = block['height']
 
-        self.log.info("Alice re-broadcasts her HTLC timeout transaction at block height {}".format(blockheight_print))
+        self.log.info(f"Alice re-broadcasts her HTLC timeout transaction at block height {blockheight_print}")
 
         assert alice_timeout_txid_2 in alice.getrawmempool()
         assert alice_timeout_txid_2 in bob.getrawmempool()
@@ -377,11 +361,13 @@ class ReplacementCyclingTest(WarnetTestFramework):
         bob_preimage_tx_2 = generate_preimage_tx(49.9998 * COIN, 4, alice_seckey, bob_seckey, hashlock,
                                                  ab_commitment_tx, bob_parent_tx_2)
 
-        bob_parent_txid_2 = bob.sendrawtransaction(hexstring=bob_parent_tx_2.serialize().hex(), maxfeerate=0)
+        #bob_parent_txid_2 = bob.sendrawtransaction(hexstring=bob_parent_tx_2.serialize().hex(), maxfeerate=0)
+        bob.sendrawtransaction(hexstring=bob_parent_tx_2.serialize().hex(), maxfeerate=0)
 
         self.sync_all()
 
-        bob_child_txid_2 = bob.sendrawtransaction(hexstring=bob_child_tx_2.serialize().hex(), maxfeerate=0)
+        # bob_child_txid_2 = bob.sendrawtransaction(hexstring=bob_child_tx_2.serialize().hex(), maxfeerate=0)
+        bob.sendrawtransaction(hexstring=bob_child_tx_2.serialize().hex(), maxfeerate=0)
 
         self.sync_all()
 
@@ -391,11 +377,11 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
         assert bob_preimage_txid_2 in alice.getrawmempool()
         assert bob_preimage_txid_2 in bob.getrawmempool()
-        assert not alice_timeout_txid_2 in alice.getrawmempool()
-        assert not alice_timeout_txid_2 in bob.getrawmempool()
+        assert alice_timeout_txid_2 not in alice.getrawmempool()
+        assert alice_timeout_txid_2 not in bob.getrawmempool()
 
         self.log.info(
-            "Bob re-broadcasts his HTLC preimage transaction at block height {} to replace".format(blockheight_print))
+            f"Bob re-broadcasts his HTLC preimage transaction at block height {blockheight_print} to replace")
 
         # Bob can repeat this replacement cycling trick until an inbound HTLC of Alice expires and double-spend her routed HTLCs.
 
