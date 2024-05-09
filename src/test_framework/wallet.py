@@ -158,6 +158,7 @@ class MiniWallet:
         res = self._test_node.scantxoutset(action="start", scanobjects=[self.get_descriptor()])
         assert_equal(True, res['success'])
         for utxo in res['unspents']:
+            self._test_node.log.info(f"utxo txid: {utxo['txid']}")
             self._utxos.append(
                 self._create_utxo(txid=utxo["txid"],
                                   vout=utxo["vout"],
