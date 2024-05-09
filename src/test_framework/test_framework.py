@@ -9,11 +9,13 @@ from enum import Enum
 import argparse
 import logging
 import os
+import pathlib
 import platform
 import pdb
 import random
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -31,11 +33,13 @@ from .util import (
     assert_equal,
     check_json_precision,
     get_datadir_path,
+    get_rpc_proxy,
     initialize_datadir,
     p2p_port,
     wait_until_helper_internal,
 )
 
+from warnet.warnet import Warnet
 
 class TestStatus(Enum):
     PASSED = 1
@@ -127,7 +131,9 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         assert hasattr(self, "num_nodes"), "Test must set self.num_nodes in set_test_params()"
 
         try:
+            print("Trying setup")
             self.setup()
+            print("Trying run_test")
             self.run_test()
         except JSONRPCException:
             self.log.exception("JSONRPC error")
@@ -155,42 +161,127 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             sys.exit(exit_code)
 
     def parse_args(self):
-        previous_releases_path = os.getenv("PREVIOUS_RELEASES_DIR") or os.getcwd() + "/releases"
+        previous_releases_path = ""
         parser = argparse.ArgumentParser(usage="%(prog)s [options]")
-        parser.add_argument("--nocleanup", dest="nocleanup", default=False, action="store_true",
-                            help="Leave bitcoinds and test.* datadir on exit or error")
-        parser.add_argument("--noshutdown", dest="noshutdown", default=False, action="store_true",
-                            help="Don't stop bitcoinds after the test execution")
-        parser.add_argument("--cachedir", dest="cachedir", default=os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../cache"),
-                            help="Directory for caching pregenerated datadirs (default: %(default)s)")
-        parser.add_argument("--tmpdir", dest="tmpdir", help="Root directory for datadirs")
-        parser.add_argument("-l", "--loglevel", dest="loglevel", default="INFO",
-                            help="log events at this level and higher to the console. Can be set to DEBUG, INFO, WARNING, ERROR or CRITICAL. Passing --loglevel DEBUG will output all logs to console. Note that logs at all levels are always written to the test_framework.log file in the temporary test directory.")
-        parser.add_argument("--tracerpc", dest="trace_rpc", default=False, action="store_true",
-                            help="Print out all RPC calls as they are made")
-        parser.add_argument("--portseed", dest="port_seed", default=os.getpid(), type=int,
-                            help="The seed to use for assigning port numbers (default: current process id)")
-        parser.add_argument("--previous-releases", dest="prev_releases", action="store_true",
-                            default=os.path.isdir(previous_releases_path) and bool(os.listdir(previous_releases_path)),
-                            help="Force test of previous releases (default: %(default)s)")
-        parser.add_argument("--coveragedir", dest="coveragedir",
-                            help="Write tested RPC commands into this directory")
-        parser.add_argument("--configfile", dest="configfile",
-                            default=os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/../../config.ini"),
-                            help="Location of the test framework config file (default: %(default)s)")
-        parser.add_argument("--pdbonfailure", dest="pdbonfailure", default=False, action="store_true",
-                            help="Attach a python debugger if test fails")
-        parser.add_argument("--usecli", dest="usecli", default=False, action="store_true",
-                            help="use bitcoin-cli instead of RPC for all commands")
-        parser.add_argument("--perf", dest="perf", default=False, action="store_true",
-                            help="profile running nodes with perf for the duration of the test")
-        parser.add_argument("--valgrind", dest="valgrind", default=False, action="store_true",
-                            help="run nodes under the valgrind memory error detector: expect at least a ~10x slowdown. valgrind 3.14 or later required. Does not apply to previous release binaries.")
-        parser.add_argument("--randomseed", type=int,
-                            help="set a random seed for deterministically reproducing a previous test run")
-        parser.add_argument("--timeout-factor", dest="timeout_factor", type=float, help="adjust test timeouts by a factor. Setting it to 0 disables all timeouts")
-        parser.add_argument("--v2transport", dest="v2transport", default=False, action="store_true",
-                            help="use BIP324 v2 connections between all nodes by default")
+        parser.add_argument(
+            "--nocleanup",
+            dest="nocleanup",
+            default=False,
+            action="store_true",
+            help="Leave bitcoinds and test.* datadir on exit or error",
+        )
+        parser.add_argument(
+            "--nosandbox",
+            dest="nosandbox",
+            default=False,
+            action="store_true",
+            help="Don't use the syscall sandbox",
+        )
+        parser.add_argument(
+            "--noshutdown",
+            dest="noshutdown",
+            default=False,
+            action="store_true",
+            help="Don't stop bitcoinds after the test execution",
+        )
+        parser.add_argument(
+            "--cachedir",
+            dest="cachedir",
+            default=None,
+            help="Directory for caching pregenerated datadirs (default: %(default)s)",
+        )
+        parser.add_argument(
+            "--tmpdir", dest="tmpdir", default=None, help="Root directory for datadirs"
+        )
+        parser.add_argument(
+            "-l",
+            "--loglevel",
+            dest="loglevel",
+            default="DEBUG",
+            help="log events at this level and higher to the console. Can be set to DEBUG, INFO, WARNING, ERROR or CRITICAL. Passing --loglevel DEBUG will output all logs to console. Note that logs at all levels are always written to the test_framework.log file in the temporary test directory.",
+        )
+        parser.add_argument(
+            "--tracerpc",
+            dest="trace_rpc",
+            default=False,
+            action="store_true",
+            help="Print out all RPC calls as they are made",
+        )
+        parser.add_argument(
+            "--portseed",
+            dest="port_seed",
+            default=0,
+            help="The seed to use for assigning port numbers (default: current process id)",
+        )
+        parser.add_argument(
+            "--previous-releases",
+            dest="prev_releases",
+            default=None,
+            action="store_true",
+            help="Force test of previous releases (default: %(default)s)",
+        )
+        parser.add_argument(
+            "--coveragedir",
+            dest="coveragedir",
+            default=None,
+            help="Write tested RPC commands into this directory",
+        )
+        parser.add_argument(
+            "--configfile",
+            dest="configfile",
+            default=None,
+            help="Location of the test framework config file (default: %(default)s)",
+        )
+        parser.add_argument(
+            "--pdbonfailure",
+            dest="pdbonfailure",
+            default=False,
+            action="store_true",
+            help="Attach a python debugger if test fails",
+        )
+        parser.add_argument(
+            "--usecli",
+            dest="usecli",
+            default=False,
+            action="store_true",
+            help="use bitcoin-cli instead of RPC for all commands",
+        )
+        parser.add_argument(
+            "--perf",
+            dest="perf",
+            default=False,
+            action="store_true",
+            help="profile running nodes with perf for the duration of the test",
+        )
+        parser.add_argument(
+            "--valgrind",
+            dest="valgrind",
+            default=False,
+            action="store_true",
+            help="run nodes under the valgrind memory error detector: expect at least a ~10x slowdown. valgrind 3.14 or later required.",
+        )
+        parser.add_argument(
+            "--randomseed",
+            default=0x7761726E6574,  # "warnet" ascii
+            help="set a random seed for deterministically reproducing a previous test run",
+        )
+        parser.add_argument(
+            "--timeout-factor",
+            dest="timeout_factor",
+            default=1,
+            help="adjust test timeouts by a factor. Setting it to 0 disables all timeouts",
+        )
+        parser.add_argument(
+            "--network",
+            dest="network",
+            default="warnet",
+            help="Designate which warnet this should run on (default: warnet)",
+        )
+        parser.add_argument(
+            "--backend",
+            dest="backend",
+            help="Designate which warnet backend this should run on",
+        )
 
         self.add_options(parser)
         # Running TestShell in a Jupyter notebook causes an additional -f argument
@@ -204,7 +295,11 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         self.options.previous_releases_path = previous_releases_path
 
         config = configparser.ConfigParser()
-        config.read_file(open(self.options.configfile))
+        if self.options.configfile is not None:
+            with open(self.options.configfile) as f:
+                config.read_file(f)
+
+        config["environment"] = {"PACKAGE_BUGREPORT": ""}
         self.config = config
 
         if "descriptors" not in self.options:
@@ -244,8 +339,50 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             )
             setattr(self.options, attribute_name, os.getenv(env_variable_name, default=default_filename))
 
+    def handle_sigterm(self, signum, frame):
+        print("SIGTERM received, stopping...")
+        self.shutdown()
+        sys.exit(0)
+
     def setup(self):
         """Call this method to start up the test framework object with options set."""
+        self.log.info("test_framework - beginning setup")
+        signal.signal(signal.SIGTERM, self.handle_sigterm)
+
+        self.log = logging.getLogger()
+        self.log.setLevel(logging.INFO)  # set this to DEBUG to see ALL RPC CALLS
+        ch = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter(fmt="%(message)s")
+        ch.setFormatter(formatter)
+        self.log.addHandler(ch)
+
+        self.warnet = Warnet.from_network(self.options.network, "k8s") #self.options.backend)
+
+        for i, tank in enumerate(self.warnet.tanks):
+            ip = tank.ipv4
+            self.log.info(f"Adding TestNode {i} from tank {tank.index} with IP {ip}")
+            node = TestNode(
+                i,
+                pathlib.Path(),  # datadir path
+                chain=tank.bitcoin_network,
+                rpchost=ip,
+                timewait=60,
+                timeout_factor=self.options.timeout_factor,
+                bitcoind=None,
+                bitcoin_cli=None,
+                cwd=self.options.tmpdir,
+                coverage_dir=self.options.coveragedir,
+            )
+            node.rpc = get_rpc_proxy(
+                f"http://{tank.rpc_user}:{tank.rpc_password}@{ip}:{tank.rpc_port}",
+                i,
+                timeout=60,
+                coveragedir=self.options.coveragedir,
+            )
+            node.rpc_connected = True
+            self.nodes.append(node)
+
+        self.num_nodes = len(self.nodes)
 
         check_json_precision()
 
@@ -535,6 +672,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
 
     def start_node(self, i, *args, **kwargs):
         """Start a bitcoind"""
+        self.log.info(f"test_framework - start_node {i}")
 
         node = self.nodes[i]
 
@@ -594,38 +732,41 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 since there will be a race between the actual connection and performing
                 the assertions before one node shuts down.
         """
-        from_connection = self.nodes[a]
-        to_connection = self.nodes[b]
-        from_num_peers = 1 + len(from_connection.getpeerinfo())
-        to_num_peers = 1 + len(to_connection.getpeerinfo())
-        ip_port = "127.0.0.1:" + str(p2p_port(b))
-
-        if peer_advertises_v2 is None:
-            peer_advertises_v2 = self.options.v2transport
-
-        if peer_advertises_v2:
-            from_connection.addnode(node=ip_port, command="onetry", v2transport=True)
-        else:
-            # skip the optional third argument (default false) for
-            # compatibility with older clients
-            from_connection.addnode(ip_port, "onetry")
-
-        if not wait_for_connect:
-            return
-
-        # poll until version handshake complete to avoid race conditions
-        # with transaction relaying
-        # See comments in net_processing:
-        # * Must have a version message before anything else
-        # * Must have a verack message before anything else
-        self.wait_until(lambda: sum(peer['version'] != 0 for peer in from_connection.getpeerinfo()) == from_num_peers)
-        self.wait_until(lambda: sum(peer['version'] != 0 for peer in to_connection.getpeerinfo()) == to_num_peers)
-        self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
-        self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in to_connection.getpeerinfo()) == to_num_peers)
-        # The message bytes are counted before processing the message, so make
-        # sure it was fully processed by waiting for a ping.
-        self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in from_connection.getpeerinfo()) == from_num_peers)
-        self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in to_connection.getpeerinfo()) == to_num_peers)
+        self.log.info(f"test_framework - connect_nodes - {self.chain} - not implemented")
+        # from_connection = self.nodes[a]
+        # to_connection = self.nodes[b]
+        # from_num_peers = 1 + len(from_connection.getpeerinfo())
+        # to_num_peers = 1 + len(to_connection.getpeerinfo())
+        # self.log.info(f"from_num_peers: {from_num_peers}; to_num_peers: {to_num_peers}")
+        # ip_port = "127.0.0.1:" + str(p2p_port(b))
+        # self.log.info(f"ip_port: {ip_port}")
+        #
+        # if peer_advertises_v2 is None:
+        #     peer_advertises_v2 = self.options.v2transport
+        #
+        # if peer_advertises_v2:
+        #     from_connection.addnode(node=ip_port, command="onetry", v2transport=True)
+        # else:
+        #     # skip the optional third argument (default false) for
+        #     # compatibility with older clients
+        #     from_connection.addnode(ip_port, "onetry")
+        #
+        # if not wait_for_connect:
+        #     return
+        #
+        # # poll until version handshake complete to avoid race conditions
+        # # with transaction relaying
+        # # See comments in net_processing:
+        # # * Must have a version message before anything else
+        # # * Must have a verack message before anything else
+        # self.wait_until(lambda: sum(peer['version'] != 0 for peer in from_connection.getpeerinfo()) == from_num_peers)
+        # self.wait_until(lambda: sum(peer['version'] != 0 for peer in to_connection.getpeerinfo()) == to_num_peers)
+        # self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
+        # self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in to_connection.getpeerinfo()) == to_num_peers)
+        # # The message bytes are counted before processing the message, so make
+        # # sure it was fully processed by waiting for a ping.
+        # self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in from_connection.getpeerinfo()) == from_num_peers)
+        # self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in to_connection.getpeerinfo()) == to_num_peers)
 
     def disconnect_nodes(self, a, b):
         def disconnect_nodes_helper(node_a, node_b):
@@ -678,7 +819,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         pass
 
     def generate(self, generator, *args, sync_fun=None, **kwargs):
-        blocks = generator.generate(*args, invalid_call=False, **kwargs)
+        blocks = generator.generate(*args, invalid_call=False, **kwargs) # test_node.generate
         sync_fun() if sync_fun else self.sync_all()
         return blocks
 
@@ -693,6 +834,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         return blocks
 
     def generatetodescriptor(self, generator, *args, sync_fun=None, **kwargs):
+        self.log.info("test_framework - generatetodescriptor")
         blocks = generator.generatetodescriptor(*args, invalid_call=False, **kwargs)
         sync_fun() if sync_fun else self.sync_all()
         return blocks

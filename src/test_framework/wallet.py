@@ -3,7 +3,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """A limited-functionality wallet, which may replace a real wallet in tests"""
-
+import time
 from copy import deepcopy
 from decimal import Decimal
 from enum import Enum
@@ -187,7 +187,9 @@ class MiniWallet:
 
     def generate(self, num_blocks, **kwargs):
         """Generate blocks with coinbase outputs to the internal address, and call rescan_utxos"""
-        blocks = self._test_node.generatetodescriptor(num_blocks, self.get_descriptor(), **kwargs)
+        self._test_node.log.info(f"wallet - generate - {num_blocks} to {self._address}")
+        self._test_node.generatetoaddress(num_blocks, self._address, invalid_call=False)
+        #blocks = self._test_node.generatetodescriptor(num_blocks, self.get_descriptor(), **kwargs)
         # Calling rescan_utxos here makes sure that after a generate the utxo
         # set is in a clean state. For example, the wallet will update
         # - if the caller consumed utxos, but never used them
@@ -196,7 +198,7 @@ class MiniWallet:
         # - the utxo height for mined mempool txs
         # - However, the wallet will not consider remaining mempool txs
         self.rescan_utxos()
-        return blocks
+        #return blocks
 
     def get_scriptPubKey(self):
         return self._scriptPubKey
@@ -215,8 +217,13 @@ class MiniWallet:
         Args:
         txid: get the first utxo we find from a specific transaction
         """
+        if len(self._utxos) == 0:
+            self._test_node.log.info(f"{self._test_node.index} Could not find any utxos. Generating, then sleeping for 20...")
+            self.generate(101)
+            time.sleep(20)
         self._utxos = sorted(self._utxos, key=lambda k: (k['value'], -k['height']))  # Put the largest utxo last
         blocks_height = self._test_node.getblockchaininfo()['blocks']
+        self._test_node.log.info(f"get_utxo block height: {blocks_height}")
         mature_coins = list(filter(lambda utxo: not utxo['coinbase'] or COINBASE_MATURITY - 1 <= blocks_height - utxo['height'], self._utxos))
         if txid:
             utxo_filter: Any = filter(lambda utxo: txid == utxo['txid'], self._utxos)

@@ -7,6 +7,7 @@ import random
 import signal
 import sys
 import tempfile
+import time
 
 from test_framework.authproxy import AuthServiceProxy
 from test_framework.p2p import NetworkThread
@@ -38,7 +39,8 @@ class WarnetTestFramework(BitcoinTestFramework):
         pass
 
     def sync_all(self):
-        pass
+        self.log.info("sync_all: sleeping for 20 seconds")
+        time.sleep(20)
 
     def handle_sigterm(self, signum, frame):
         print("SIGTERM received, stopping...")
@@ -139,6 +141,8 @@ class WarnetTestFramework(BitcoinTestFramework):
         # self.skip_test_if_missing_module()
         # self.setup_chain()
         # self.setup_network()
+        self.generatetoaddress(self.nodes[0], nblocks=101,
+                               address="bcrt1p9yfmy5h72durp7zrhlw9lf7jpwjgvwdg0jr0lqmmjtgg83266lqsekaqka")
 
         self.success = TestStatus.PASSED
 
