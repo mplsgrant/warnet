@@ -7,6 +7,7 @@
 from copy import deepcopy
 from decimal import Decimal
 from enum import Enum
+import time
 from typing import (
     Any,
     List,
@@ -86,6 +87,30 @@ class MiniWallet:
         self._utxos = []
         self._mode = mode
 
+        self._test_node.log.info(f"MiniWallet test_node rpc: {self._test_node.rpc.rpc_url}")
+
+        self.wallet_name = "mini_wallet"
+        wallets = self._test_node.listwallets()
+        self._test_node.log.info(f"list wallets: {print(wallets)}")
+        if self.wallet_name not in wallets:
+            self._test_node.log.info(f"creating wallet: {self.wallet_name}")
+            self._test_node.createwallet(self.wallet_name, descriptors=True)
+        temp_rpc = self._test_node.get_wallet_rpc(self.wallet_name)
+        self._test_node.log.info(f"wallet - test_node {self._test_node.index} - {temp_rpc.rpc.rpc_url}")
+        self._test_node.rpc = temp_rpc.rpc
+
+        #self._test_node.loadwallet(self.wallet_name)
+
+        # sweep private key from test_node
+        privkey = self._test_node.get_deterministic_priv_key()
+        self._test_node.log.info(f"privkey: {privkey.key}")
+        self._test_node.importprivkey(privkey.key, "deterministic_key", 1)
+        self._test_node.rescanblockchain()
+        self._test_node.log.info("rescanning blockchain; sleeping for 10 seconds")
+        time.sleep(10)
+        balances = self._test_node.getbalances()
+        self._test_node.log.info(f"balances {print(balances)}")
+
         assert isinstance(mode, MiniWalletMode)
         if mode == MiniWalletMode.RAW_OP_TRUE:
             self._scriptPubKey = bytes(CScript([OP_TRUE]))
@@ -105,6 +130,7 @@ class MiniWallet:
         # The MiniWallet needs to rescan_utxos() in order to account
         # for those mature UTXOs, so that all txs spend confirmed coins
         self.rescan_utxos()
+
 
     def _create_utxo(self, *, txid, vout, value, height, coinbase, confirmations):
         return {"txid": txid, "vout": vout, "value": value, "height": height, "coinbase": coinbase, "confirmations": confirmations}
@@ -126,10 +152,14 @@ class MiniWallet:
 
     def rescan_utxos(self, *, include_mempool=True):
         """Drop all utxos and rescan the utxo set"""
+        self._test_node.log.info("rescan_utxos: sleep for 5")
+        time.sleep(5)
+        self._test_node.log.info(f"wallet - rescan_utxos - node {self._test_node.index}")
         self._utxos = []
         res = self._test_node.scantxoutset(action="start", scanobjects=[self.get_descriptor()])
         assert_equal(True, res['success'])
         for utxo in res['unspents']:
+            self._test_node.log.info(f"utxo txid: {utxo['txid']}")
             self._utxos.append(
                 self._create_utxo(txid=utxo["txid"],
                                   vout=utxo["vout"],
@@ -143,6 +173,9 @@ class MiniWallet:
             sorted_mempool = sorted(mempool.items(), key=lambda item: (item[1]["ancestorcount"], int(item[0], 16)))
             for txid, _ in sorted_mempool:
                 self.scan_tx(self._test_node.getrawtransaction(txid=txid, verbose=True))
+
+        self._test_node.log.info("rescan_utxos: sleep for 10")
+        time.sleep(10)
 
     def scan_tx(self, tx):
         """Scan the tx and adjust the internal list of owned utxos"""
@@ -187,6 +220,7 @@ class MiniWallet:
 
     def generate(self, num_blocks, **kwargs):
         """Generate blocks with coinbase outputs to the internal address, and call rescan_utxos"""
+        self._test_node.log.info(f"wallet.generate generating: {num_blocks} blocks")
         blocks = self._test_node.generatetodescriptor(num_blocks, self.get_descriptor(), **kwargs)
         # Calling rescan_utxos here makes sure that after a generate the utxo
         # set is in a clean state. For example, the wallet will update
@@ -226,6 +260,8 @@ class MiniWallet:
             utxo_filter = filter(lambda utxo: vout == utxo['vout'], utxo_filter)
         if confirmed_only:
             utxo_filter = filter(lambda utxo: utxo['confirmations'] > 0, utxo_filter)
+        self._test_node.log.info(f"utxo_filer: {print(utxo_filter)}")
+        self._test_node.log.info(f"utxos: {print(self._utxos)}")
         index = self._utxos.index(next(utxo_filter))
         if mark_as_spent:
             return self._utxos.pop(index)

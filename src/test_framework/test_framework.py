@@ -819,7 +819,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         pass
 
     def generate(self, generator, *args, sync_fun=None, **kwargs):
-        blocks = generator.generate(*args, invalid_call=False, **kwargs)
+        blocks = generator.generate(*args, invalid_call=False, **kwargs) # test_node.generate
         sync_fun() if sync_fun else self.sync_all()
         return blocks
 
