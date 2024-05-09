@@ -321,9 +321,9 @@ class TestNode():
 
     def generate(self, nblocks, maxtries=1000000, **kwargs):
         self.log.info(f"TestNode.generate() `generatetoaddress` blocks {nblocks} {self.get_deterministic_priv_key().address}")
-        #return self.generatetoaddress(nblocks=nblocks, address=self.get_deterministic_priv_key().address, maxtries=maxtries, **kwargs)
-        return self.generatetoaddress(nblocks=nblocks, address="bcrt1p9yfmy5h72durp7zrhlw9lf7jpwjgvwdg0jr0lqmmjtgg83266lqsekaqka",
-                                      maxtries=maxtries, **kwargs)
+        return self.generatetoaddress(nblocks=nblocks, address=self.get_deterministic_priv_key().address, maxtries=maxtries, **kwargs)
+        # return self.generatetoaddress(nblocks=nblocks, address="bcrt1p9yfmy5h72durp7zrhlw9lf7jpwjgvwdg0jr0lqmmjtgg83266lqsekaqka",
+        #                               maxtries=maxtries, **kwargs)
 
     def generateblock(self, *args, invalid_call, **kwargs):
         assert not invalid_call
