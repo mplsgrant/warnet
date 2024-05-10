@@ -22,13 +22,14 @@ import shlex
 import sys
 from pathlib import Path
 
-from .authproxy import (
+
+from test_framework.authproxy import (
     JSONRPCException,
     serialization_fallback,
 )
-from .descriptors import descsum_create
-from .p2p import P2P_SUBVERSION
-from .util import (
+from test_framework.descriptors import descsum_create
+from test_framework.p2p import P2P_SUBVERSION
+from test_framework.util import (
     MAX_NODES,
     assert_equal,
     append_config,
