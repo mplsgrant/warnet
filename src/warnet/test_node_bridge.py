@@ -4,24 +4,22 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Class for bitcoind node under test"""
 
+import collections
 import contextlib
 import decimal
 import errno
-from enum import Enum
-import http.client
 import json
 import logging
 import os
 import re
+import shlex
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.parse
-import collections
-import shlex
-import sys
+from enum import Enum
 from pathlib import Path
-
 
 from test_framework.authproxy import (
     JSONRPCException,
@@ -31,14 +29,10 @@ from test_framework.descriptors import descsum_create
 from test_framework.p2p import P2P_SUBVERSION
 from test_framework.util import (
     MAX_NODES,
-    assert_equal,
     append_config,
-    delete_cookie_file,
-    get_auth_cookie,
-    get_rpc_proxy,
-    rpc_url,
-    wait_until_helper_internal,
+    assert_equal,
     p2p_port,
+    wait_until_helper_internal,
 )
 
 BITCOIND_PROC_WAIT_TIMEOUT = 60
@@ -54,7 +48,7 @@ class ErrorMatch(Enum):
     PARTIAL_REGEX = 3
 
 
-class TestNode():
+class TestNode:
     """A class for representing a bitcoind node under test.
 
     This class contains:
@@ -116,7 +110,7 @@ class TestNode():
             default_suppressions_file = Path(__file__).parents[3] / "contrib" / "valgrind.supp"
             suppressions_file = os.getenv("VALGRIND_SUPPRESSIONS_FILE",
                                           default_suppressions_file)
-            self.args = ["valgrind", "--suppressions={}".format(suppressions_file),
+            self.args = ["valgrind", f"--suppressions={suppressions_file}",
                          "--gen-suppressions=all", "--exit-on-first-error=yes",
                          "--error-exitcode=1", "--quiet"] + self.args
 
@@ -302,7 +296,7 @@ class TestNode():
                 if "No RPC credentials" not in str(e):
                     raise
             time.sleep(1.0 / poll_per_s)
-        self._raise_assertion_error("Unable to connect to bitcoind after {}s".format(self.rpc_timeout))
+        self._raise_assertion_error(f"Unable to connect to bitcoind after {self.rpc_timeout}s")
 
     def wait_for_cookie_credentials(self):
         """Ensures auth cookie credentials can be read, e.g. for testing CLI with -rpcwait before RPC connection is up."""
@@ -350,10 +344,10 @@ class TestNode():
 
     def get_wallet_rpc(self, wallet_name):
         if self.use_cli:
-            return RPCOverloadWrapper(self.cli("-rpcwallet={}".format(wallet_name)), True, self.descriptors)
+            return RPCOverloadWrapper(self.cli(f"-rpcwallet={wallet_name}"), True, self.descriptors)
         else:
             assert self.rpc_connected and self.rpc, self._node_msg("RPC not connected")
-            wallet_path = "wallet/{}".format(urllib.parse.quote(wallet_name))
+            wallet_path = f"wallet/{urllib.parse.quote(wallet_name)}"
             self.log.info(f"get_wallet_rpc wallet_path: {wallet_path}")
             self.rpc.rpc_url = self.rpc.rpc_url + "/" + wallet_path
             return RPCOverloadWrapper(self.rpc / wallet_path, descriptors=self.descriptors)
@@ -483,7 +477,7 @@ class TestNode():
             print_log = " - " + "\n - ".join(log.splitlines())
             for unexpected_msg in unexpected_msgs:
                 if re.search(re.escape(unexpected_msg), log, flags=re.MULTILINE):
-                    self._raise_assertion_error('Unexpected message "{}" partially matches log:\n\n{}\n\n'.format(unexpected_msg, print_log))
+                    self._raise_assertion_error(f'Unexpected message "{unexpected_msg}" partially matches log:\n\n{print_log}\n\n')
             for expected_msg in expected_msgs:
                 if re.search(re.escape(expected_msg), log, flags=re.MULTILINE) is None:
                     found = False
@@ -492,7 +486,7 @@ class TestNode():
             if time.time() >= time_end:
                 break
             time.sleep(0.05)
-        self._raise_assertion_error('Expected messages "{}" does not partially match log:\n\n{}\n\n'.format(str(expected_msgs), print_log))
+        self._raise_assertion_error(f'Expected messages "{str(expected_msgs)}" does not partially match log:\n\n{print_log}\n\n')
 
     @contextlib.contextmanager
     def wait_for_debug_log(self, expected_msgs, timeout=60):
@@ -528,8 +522,7 @@ class TestNode():
             # possible.
 
         self._raise_assertion_error(
-            'Expected messages "{}" does not partially match log:\n\n{}\n\n'.format(
-                str(expected_msgs), print_log))
+            f'Expected messages "{str(expected_msgs)}" does not partially match log:\n\n{print_log}\n\n')
 
     @contextlib.contextmanager
     def profile_with_perf(self, profile_name: str):
@@ -572,7 +565,7 @@ class TestNode():
             self.log.warning("Can't profile with perf; must install perf-tools")
             return None
 
-        if not test_success('readelf -S {} | grep .debug_str'.format(shlex.quote(self.binary))):
+        if not test_success(f'readelf -S {shlex.quote(self.binary)} | grep .debug_str'):
             self.log.warning(
                 "perf output won't be very useful without debug symbols compiled into bitcoind")
 
@@ -611,8 +604,8 @@ class TestNode():
                 "perf couldn't collect data! Try "
                 "'sudo sysctl -w kernel.perf_event_paranoid=-1'")
         else:
-            report_cmd = "perf report -i {}".format(output_path)
-            self.log.info("See perf output by running '{}'".format(report_cmd))
+            report_cmd = f"perf report -i {output_path}"
+            self.log.info(f"See perf output by running '{report_cmd}'")
 
     def assert_start_raises_init_error(self, extra_args=None, expected_msg=None, match=ErrorMatch.FULL_TEXT, *args, **kwargs):
         """Attempt to start the node and expect it to raise an error.
@@ -641,15 +634,15 @@ class TestNode():
                     if match == ErrorMatch.PARTIAL_REGEX:
                         if re.search(expected_msg, stderr, flags=re.MULTILINE) is None:
                             self._raise_assertion_error(
-                                'Expected message "{}" does not partially match stderr:\n"{}"'.format(expected_msg, stderr))
+                                f'Expected message "{expected_msg}" does not partially match stderr:\n"{stderr}"')
                     elif match == ErrorMatch.FULL_REGEX:
                         if re.fullmatch(expected_msg, stderr) is None:
                             self._raise_assertion_error(
-                                'Expected message "{}" does not fully match stderr:\n"{}"'.format(expected_msg, stderr))
+                                f'Expected message "{expected_msg}" does not fully match stderr:\n"{stderr}"')
                     elif match == ErrorMatch.FULL_TEXT:
                         if expected_msg != stderr:
                             self._raise_assertion_error(
-                                'Expected message "{}" does not fully match stderr:\n"{}"'.format(expected_msg, stderr))
+                                f'Expected message "{expected_msg}" does not fully match stderr:\n"{stderr}"')
             except subprocess.TimeoutExpired:
                 self.process.kill()
                 self.running = False
@@ -783,7 +776,7 @@ def arg_to_cli(arg):
         return str(arg)
 
 
-class TestNodeCLI():
+class TestNodeCLI:
     """Interface to bitcoin-cli for an individual node"""
     def __init__(self, binary, datadir):
         self.options = []
@@ -821,7 +814,7 @@ class TestNodeCLI():
         if command is not None:
             p_args += [command]
         p_args += pos_args + named_args
-        self.log.debug("Running bitcoin-cli {}".format(p_args[2:]))
+        self.log.debug(f"Running bitcoin-cli {p_args[2:]}")
         process = subprocess.Popen(p_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cli_stdout, cli_stderr = process.communicate(input=self.input)
         returncode = process.poll()
@@ -837,7 +830,7 @@ class TestNodeCLI():
         except (json.JSONDecodeError, decimal.InvalidOperation):
             return cli_stdout.rstrip("\n")
 
-class RPCOverloadWrapper():
+class RPCOverloadWrapper:
     def __init__(self, rpc, cli=False, descriptors=False):
         self.rpc = rpc
         self.is_cli = cli

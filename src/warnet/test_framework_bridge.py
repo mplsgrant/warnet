@@ -17,7 +17,6 @@ from test_framework.test_framework import (
     TestStatus,
 )
 from test_framework.util import PortSeed, get_rpc_proxy
-
 from warnet.test_node_bridge import TestNode
 from warnet.warnet import Warnet
 
