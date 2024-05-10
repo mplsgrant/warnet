@@ -16,8 +16,9 @@ from test_framework.test_framework import (
     BitcoinTestFramework,
     TestStatus,
 )
-from test_framework.test_node import TestNode
 from test_framework.util import PortSeed, get_rpc_proxy
+
+from warnet.test_node_bridge import TestNode
 from warnet.warnet import Warnet
 
 
@@ -309,3 +310,13 @@ class WarnetTestFramework(BitcoinTestFramework):
                 self.options.descriptors = None
 
         PortSeed.n = self.options.port_seed
+
+    def connect_nodes(self, a, b, *, peer_advertises_v2=None, wait_for_connect: bool = True):
+        """
+        Kwargs:
+        wait_for_connect: if True, block until the nodes are verified as connected. You might
+            want to disable this when using -stopatheight with one of the connected nodes,
+            since there will be a race between the actual connection and performing
+            the assertions before one node shuts down.
+        """
+        self.log.info(f"test_framework_bridge - connect_nodes - {self.chain}: not implemented")

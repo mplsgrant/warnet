@@ -39,8 +39,9 @@ from test_framework.script import (
     hash160,
 )
 from test_framework.util import assert_equal
-from test_framework.wallet import MiniWallet
-from warnet.test_framework_bridge import WarnetTestFramework
+
+from warnet.wallet_bridge import MiniWallet
+from warnet.test_framework_bridge import WarnetTestFramework as BitcoinTestFramework
 
 
 def cli_help():
@@ -193,7 +194,7 @@ def create_chan_state(funding_txid, funding_vout, funder_seckey, fundee_seckey, 
     return (commitment_tx, offerer_timeout, receiver_preimage)
 
 
-class ReplacementCyclingTest(WarnetTestFramework):
+class ReplacementCyclingTest(BitcoinTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 2
