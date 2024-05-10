@@ -39,8 +39,7 @@ from test_framework.script import (
     hash160,
 )
 from test_framework.util import assert_equal
-
-from warnet.wallet_bridge import MiniWallet
+from test_framework.wallet import MiniWallet
 from warnet.test_framework_bridge import WarnetTestFramework as BitcoinTestFramework
 
 
