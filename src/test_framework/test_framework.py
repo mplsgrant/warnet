@@ -9,13 +9,11 @@ from enum import Enum
 import argparse
 import logging
 import os
-import pathlib
 import platform
 import pdb
 import random
 import re
 import shutil
-import signal
 import subprocess
 import sys
 import tempfile
@@ -33,13 +31,11 @@ from .util import (
     assert_equal,
     check_json_precision,
     get_datadir_path,
-    get_rpc_proxy,
     initialize_datadir,
     p2p_port,
     wait_until_helper_internal,
 )
 
-from warnet.warnet import Warnet
 
 class TestStatus(Enum):
     PASSED = 1
@@ -208,11 +204,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         self.options.previous_releases_path = previous_releases_path
 
         config = configparser.ConfigParser()
-        if self.options.configfile is not None:
-            with open(self.options.configfile) as f:
-                config.read_file(f)
-
-        config["environment"] = {"PACKAGE_BUGREPORT": ""}
+        config.read_file(open(self.options.configfile))
         self.config = config
 
         if "descriptors" not in self.options:
@@ -252,50 +244,8 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             )
             setattr(self.options, attribute_name, os.getenv(env_variable_name, default=default_filename))
 
-    def handle_sigterm(self, signum, frame):
-        print("SIGTERM received, stopping...")
-        self.shutdown()
-        sys.exit(0)
-
     def setup(self):
         """Call this method to start up the test framework object with options set."""
-        self.log.info("test_framework - beginning setup")
-        signal.signal(signal.SIGTERM, self.handle_sigterm)
-
-        self.log = logging.getLogger()
-        self.log.setLevel(logging.INFO)  # set this to DEBUG to see ALL RPC CALLS
-        ch = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter(fmt="%(message)s")
-        ch.setFormatter(formatter)
-        self.log.addHandler(ch)
-
-        self.warnet = Warnet.from_network(self.options.network, "k8s") #self.options.backend)
-
-        for i, tank in enumerate(self.warnet.tanks):
-            ip = tank.ipv4
-            self.log.info(f"Adding TestNode {i} from tank {tank.index} with IP {ip}")
-            node = TestNode(
-                i,
-                pathlib.Path(),  # datadir path
-                chain=tank.bitcoin_network,
-                rpchost=ip,
-                timewait=60,
-                timeout_factor=self.options.timeout_factor,
-                bitcoind=None,
-                bitcoin_cli=None,
-                cwd=self.options.tmpdir,
-                coverage_dir=self.options.coveragedir,
-            )
-            node.rpc = get_rpc_proxy(
-                f"http://{tank.rpc_user}:{tank.rpc_password}@{ip}:{tank.rpc_port}",
-                i,
-                timeout=60,
-                coveragedir=self.options.coveragedir,
-            )
-            node.rpc_connected = True
-            self.nodes.append(node)
-
-        self.num_nodes = len(self.nodes)
 
         check_json_precision()
 
@@ -585,7 +535,6 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
 
     def start_node(self, i, *args, **kwargs):
         """Start a bitcoind"""
-        self.log.info(f"test_framework - start_node {i}")
 
         node = self.nodes[i]
 
@@ -645,41 +594,38 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 since there will be a race between the actual connection and performing
                 the assertions before one node shuts down.
         """
-        self.log.info(f"test_framework - connect_nodes - {self.chain} - not implemented")
-        # from_connection = self.nodes[a]
-        # to_connection = self.nodes[b]
-        # from_num_peers = 1 + len(from_connection.getpeerinfo())
-        # to_num_peers = 1 + len(to_connection.getpeerinfo())
-        # self.log.info(f"from_num_peers: {from_num_peers}; to_num_peers: {to_num_peers}")
-        # ip_port = "127.0.0.1:" + str(p2p_port(b))
-        # self.log.info(f"ip_port: {ip_port}")
-        #
-        # if peer_advertises_v2 is None:
-        #     peer_advertises_v2 = self.options.v2transport
-        #
-        # if peer_advertises_v2:
-        #     from_connection.addnode(node=ip_port, command="onetry", v2transport=True)
-        # else:
-        #     # skip the optional third argument (default false) for
-        #     # compatibility with older clients
-        #     from_connection.addnode(ip_port, "onetry")
-        #
-        # if not wait_for_connect:
-        #     return
-        #
-        # # poll until version handshake complete to avoid race conditions
-        # # with transaction relaying
-        # # See comments in net_processing:
-        # # * Must have a version message before anything else
-        # # * Must have a verack message before anything else
-        # self.wait_until(lambda: sum(peer['version'] != 0 for peer in from_connection.getpeerinfo()) == from_num_peers)
-        # self.wait_until(lambda: sum(peer['version'] != 0 for peer in to_connection.getpeerinfo()) == to_num_peers)
-        # self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
-        # self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in to_connection.getpeerinfo()) == to_num_peers)
-        # # The message bytes are counted before processing the message, so make
-        # # sure it was fully processed by waiting for a ping.
-        # self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in from_connection.getpeerinfo()) == from_num_peers)
-        # self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in to_connection.getpeerinfo()) == to_num_peers)
+        from_connection = self.nodes[a]
+        to_connection = self.nodes[b]
+        from_num_peers = 1 + len(from_connection.getpeerinfo())
+        to_num_peers = 1 + len(to_connection.getpeerinfo())
+        ip_port = "127.0.0.1:" + str(p2p_port(b))
+
+        if peer_advertises_v2 is None:
+            peer_advertises_v2 = self.options.v2transport
+
+        if peer_advertises_v2:
+            from_connection.addnode(node=ip_port, command="onetry", v2transport=True)
+        else:
+            # skip the optional third argument (default false) for
+            # compatibility with older clients
+            from_connection.addnode(ip_port, "onetry")
+
+        if not wait_for_connect:
+            return
+
+        # poll until version handshake complete to avoid race conditions
+        # with transaction relaying
+        # See comments in net_processing:
+        # * Must have a version message before anything else
+        # * Must have a verack message before anything else
+        self.wait_until(lambda: sum(peer['version'] != 0 for peer in from_connection.getpeerinfo()) == from_num_peers)
+        self.wait_until(lambda: sum(peer['version'] != 0 for peer in to_connection.getpeerinfo()) == to_num_peers)
+        self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
+        self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in to_connection.getpeerinfo()) == to_num_peers)
+        # The message bytes are counted before processing the message, so make
+        # sure it was fully processed by waiting for a ping.
+        self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in from_connection.getpeerinfo()) == from_num_peers)
+        self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in to_connection.getpeerinfo()) == to_num_peers)
 
     def disconnect_nodes(self, a, b):
         def disconnect_nodes_helper(node_a, node_b):
@@ -732,7 +678,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         pass
 
     def generate(self, generator, *args, sync_fun=None, **kwargs):
-        blocks = generator.generate(*args, invalid_call=False, **kwargs) # test_node.generate
+        blocks = generator.generate(*args, invalid_call=False, **kwargs)
         sync_fun() if sync_fun else self.sync_all()
         return blocks
 
@@ -747,7 +693,6 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         return blocks
 
     def generatetodescriptor(self, generator, *args, sync_fun=None, **kwargs):
-        self.log.info("test_framework - generatetodescriptor")
         blocks = generator.generatetodescriptor(*args, invalid_call=False, **kwargs)
         sync_fun() if sync_fun else self.sync_all()
         return blocks
