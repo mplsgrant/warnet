@@ -38,9 +38,68 @@ class WarnetTestFramework(BitcoinTestFramework):
     def run_test(self):
         pass
 
-    def sync_all(self):
-        self.log.info("sync_all: sleeping for 20 seconds")
-        time.sleep(20)
+    def sync_blocks(self, nodes=None, wait=1, timeout=60):
+        """
+        Wait until everybody has the same tip.
+        sync_blocks needs to be called with an rpc_connections set that has least
+        one node already synced to the latest, stable tip, otherwise there's a
+        chance it might return before all nodes are stably synced.
+        """
+        # TODO: The 12th node (node #11) is not connected to the network
+        # This breaks sync_all's assumptions
+        self.log.info(f"sync_blocks...")
+        nodes = nodes or self.nodes
+        timeout = int(timeout * self.options.timeout_factor)
+        stop_time = time.time() + timeout
+        block_counts = [(x.index, x.getblockcount()) for x in nodes]
+        for (i, block_count) in block_counts:
+            self.log.info(f"block_count: {i} - {block_count}")
+        while time.time() <= stop_time:
+            best_hash = [x.getbestblockhash() for x in nodes]
+            if best_hash.count(best_hash[0]) == len(nodes):
+                 self.log.info(f"...success")
+                 return
+        # Check that each peer has at least one connection
+        assert (all([len(x.getpeerinfo()) for x in nodes]))
+        time.sleep(wait)
+        raise AssertionError("Block sync timed out after {}s:{}".format(
+            timeout,
+            "".join("\n  {!r}".format(b) for b in best_hash),
+        ))
+
+    def sync_mempools(self, nodes=None, wait=1, timeout=60, flush_scheduler=True):
+        """
+        Wait until everybody has the same transactions in their memory
+        pools
+        """
+        self.log.info("sync_mempools...")
+        nodes = nodes or self.nodes
+        timeout = int(timeout * self.options.timeout_factor)
+        stop_time = time.time() + timeout
+        while time.time() <= stop_time:
+            pool = [set(r.getrawmempool()) for r in nodes]
+            if pool.count(pool[0]) == len(nodes):
+                if flush_scheduler:
+                    for r in nodes:
+                        r.syncwithvalidationinterfacequeue()
+                self.log.info("...success")
+                return
+            # Check that each peer has at least one connection
+            assert (all([len(x.getpeerinfo()) for x in nodes]))
+            time.sleep(wait)
+        raise AssertionError("Mempool sync timed out after {}s:{}".format(
+            timeout,
+            "".join("\n  {!r}".format(m) for m in pool),
+        ))
+
+    def sync_all(self, nodes=None):
+        self.sync_blocks(nodes)
+        self.sync_mempools(nodes)
+
+    # def sync_all(self):
+    #     self.log.info("sync_all: sleeping for 20 seconds")
+    #     time.sleep(20)
+
 
     def handle_sigterm(self, signum, frame):
         print("SIGTERM received, stopping...")
@@ -319,3 +378,4 @@ class WarnetTestFramework(BitcoinTestFramework):
             the assertions before one node shuts down.
         """
         self.log.info(f"test_framework_bridge - connect_nodes - {self.chain}: not implemented")
+
