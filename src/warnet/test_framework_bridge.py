@@ -15,6 +15,7 @@ from test_framework.test_framework import (
     TMPDIR_PREFIX,
     BitcoinTestFramework,
     TestStatus,
+    p2p_port
 )
 from test_framework.util import PortSeed, get_rpc_proxy
 from warnet.test_node_bridge import TestNode
@@ -312,3 +313,50 @@ class WarnetTestFramework(BitcoinTestFramework):
 
         PortSeed.n = self.options.port_seed
 
+    def connect_nodes(self, a, b, *, peer_advertises_v2=None, wait_for_connect: bool = True):
+        """
+        Kwargs:
+            wait_for_connect: if True, block until the nodes are verified as connected. You might
+                want to disable this when using -stopatheight with one of the connected nodes,
+                since there will be a race between the actual connection and performing
+                the assertions before one node shuts down.
+        """
+        from_connection = self.nodes[a]
+        to_connection = self.nodes[b]
+        from_num_peers = 1 + len(from_connection.getpeerinfo())
+        to_num_peers = 1 + len(to_connection.getpeerinfo())
+
+        for network_info in to_connection.getnetworkinfo()["localaddresses"]:
+           to_connection.log.info(f"network addy: {network_info["address"]}")
+
+        ip_port = "10.244.0.8:" + str(p2p_port(b))
+        from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
+        from_connection.log.info(f"from_num_peers = {from_num_peers}")
+        from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
+        from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
+        if peer_advertises_v2 is None:
+            peer_advertises_v2 = self.options.v2transport
+
+        if peer_advertises_v2:
+            from_connection.addnode(node=ip_port, command="onetry", v2transport=True)
+        else:
+            # skip the optional third argument (default false) for
+            # compatibility with older clients
+            from_connection.addnode(ip_port, "onetry")
+
+        if not wait_for_connect:
+            return
+
+        # poll until version handshake complete to avoid race conditions
+        # with transaction relaying
+        # See comments in net_processing:
+        # * Must have a version message before anything else
+        # * Must have a verack message before anything else
+        self.wait_until(lambda: sum(peer['version'] != 0 for peer in from_connection.getpeerinfo()) == from_num_peers)
+        self.wait_until(lambda: sum(peer['version'] != 0 for peer in to_connection.getpeerinfo()) == to_num_peers)
+        self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
+        self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in to_connection.getpeerinfo()) == to_num_peers)
+        # The message bytes are counted before processing the message, so make
+        # sure it was fully processed by waiting for a ping.
+        self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in from_connection.getpeerinfo()) == from_num_peers)
+        self.wait_until(lambda: sum(peer["bytesrecv_per_msg"].pop("pong", 0) >= 29 for peer in to_connection.getpeerinfo()) == to_num_peers)
