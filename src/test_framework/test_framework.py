@@ -599,6 +599,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         from_num_peers = 1 + len(from_connection.getpeerinfo())
         to_num_peers = 1 + len(to_connection.getpeerinfo())
         ip_port = "127.0.0.1:" + str(p2p_port(b))
+        from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
         from_connection.log.info(f"from_num_peers = {from_num_peers}")
         from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
         from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
