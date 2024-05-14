@@ -328,13 +328,13 @@ class WarnetTestFramework(BitcoinTestFramework):
         to_num_peers = 1 + len(to_connection.getpeerinfo())
 
         for network_info in to_connection.getnetworkinfo()["localaddresses"]:
-            local_address = ipaddress.ip_address("0.0.0.0")
-            address = network_info['address']
-            ip = ipaddress.ip_address(address)
-            if ip.version == 4 and address is not local_address:
-                ip_port = address + str(p2p_port(b))
-                to_connection.log.info(f"IP_PORT: {ip_port}")
+            to_address = network_info['address']
+            local_ip = ipaddress.ip_address("0.0.0.0")
+            to_ip = ipaddress.ip_address(to_address)
+            if to_ip.version == 4 and to_ip is not local_ip:
+                ip_port = to_address + ":" + str(p2p_port(b))
 
+        to_connection.log.info(f"IP_PORT: {ip_port}")
         from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
         from_connection.log.info(f"from_num_peers = {from_num_peers}")
         from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
