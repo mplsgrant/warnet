@@ -6,6 +6,9 @@
 # https://github.com/ariard/bitcoin/blob/30f5d5b270e4ff195e8dcb9ef6b7ddcc5f6a1bf2/test/functional/mempool_replacement_cycling.py#L5
 
 
+def cli_help():
+    return "Run a replacement cycling attack"
+
 """Test replacement cyling attacks against Lightning channels"""
 
 from test_framework.key import (
