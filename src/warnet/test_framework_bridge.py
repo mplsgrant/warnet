@@ -327,7 +327,7 @@ class WarnetTestFramework(BitcoinTestFramework):
         to_num_peers = 1 + len(to_connection.getpeerinfo())
 
         for network_info in to_connection.getnetworkinfo()["localaddresses"]:
-           to_connection.log.info(f"network addy: {network_info["address"]}")
+           to_connection.log.info(f"network addy: {network_info['address']}")
 
         ip_port = "10.244.0.8:" + str(p2p_port(b))
         from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
