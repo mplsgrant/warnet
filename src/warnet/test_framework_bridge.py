@@ -334,7 +334,6 @@ class WarnetTestFramework(BitcoinTestFramework):
             if to_ip.version == 4 and to_ip is not local_ip:
                 ip_port = to_address + ":" + str(p2p_port(b))
 
-        to_connection.log.info(f"IP_PORT: {ip_port}")
         from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
         from_connection.log.info(f"from_num_peers = {from_num_peers}")
         from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
@@ -352,6 +351,8 @@ class WarnetTestFramework(BitcoinTestFramework):
         if not wait_for_connect:
             return
 
+        from_connection.log.info(f"PEERINFO: {from_connection.getpeerinfo()}")
+        from_connection.log.info(f"NUM_PEERS: {from_num_peers}")
         # poll until version handshake complete to avoid race conditions
         # with transaction relaying
         # See comments in net_processing:
