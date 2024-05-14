@@ -370,6 +370,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         # Bob can repeat this replacement cycling trick until an inbound HTLC of Alice expires and double-spend her routed HTLCs.
 
     def run_test(self):
+        self.connect_nodes(self.nodes[3], self.nodes[6])
         self.wallet = MiniWallet(self.nodes[0])
 
         self.test_replacement_cycling()
