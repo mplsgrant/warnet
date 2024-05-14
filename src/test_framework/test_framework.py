@@ -586,7 +586,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
     def wait_for_node_exit(self, i, timeout):
         self.nodes[i].process.wait(timeout)
 
-    def connect_nodes(self, a: TestNode, b: TestNode, *, peer_advertises_v2=None, wait_for_connect: bool = True):
+    def connect_nodes(self, a, b, *, peer_advertises_v2=None, wait_for_connect: bool = True):
         """
         Kwargs:
             wait_for_connect: if True, block until the nodes are verified as connected. You might
@@ -599,7 +599,8 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         from_num_peers = 1 + len(from_connection.getpeerinfo())
         to_num_peers = 1 + len(to_connection.getpeerinfo())
         ip_port = "127.0.0.1:" + str(p2p_port(b))
-        a.log.info(f"a's rpc connection: {a.rpc.rpc_url}")
+        from_connection.log.info(f"a's rpc connection: {from_connection.rpc.rpc_url}")
+        from_connection.log.info(f"getneworkinfo: {from_connection.getnetworkinfo()}")
         if peer_advertises_v2 is None:
             peer_advertises_v2 = self.options.v2transport
 
