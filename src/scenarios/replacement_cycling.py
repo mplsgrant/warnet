@@ -374,6 +374,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
     def run_test(self):
         self.connect_nodes(3, 6)
+        self.nodes[0].assert_debug_log("Opened LevelDB successfully")
         self.wallet = MiniWallet(self.nodes[0])
 
         self.test_replacement_cycling()
