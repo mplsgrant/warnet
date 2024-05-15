@@ -358,19 +358,19 @@ class WarnetTestFramework(BitcoinTestFramework):
         from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
         from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
         from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
-        from_connection.log.info(f"from's ip_port: {to_ip_port}")
+        from_connection.log.info(f"from's ip_port: {from_ip_port}")
         to_connection.log.info(f"to's peer info: {to_connection.getpeerinfo()}")
         to_connection.log.info(f"to's rpc connection: {to_connection.rpc.rpc_url}")
         to_connection.log.info(f"to's getnetworkinfo: {to_connection.getnetworkinfo()}")
         to_connection.log.info(f"to's ip_port: {to_ip_port}")
 
         for peer in from_connection.getpeerinfo():
-            from_connection.log.info(f"from_connection getpeerinfo:peer addr: {peer['addr']} - to_ip_port {to_ip_port}")
+            from_connection.log.info(f"from_connection getpeerinfo: peer addr: {peer['addr']} - to_ip_port {to_ip_port}")
             maybe = any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo())
             from_connection.log.info(f"maybe from : {maybe}")
 
         for peer in to_connection.getpeerinfo():
-            to_connection.log.info(f"to_connection getpeerinfo:peer addr: {peer['addr']} - to_ip_port {from_ip_port}")
+            to_connection.log.info(f"to_connection getpeerinfo: peer addr: {peer['addr']} - to_ip_port {from_ip_port}")
             maybe = any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo())
             to_connection.log.info(f"maybe: {maybe}")
             try:
