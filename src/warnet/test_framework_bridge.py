@@ -332,7 +332,7 @@ class WarnetTestFramework(BitcoinTestFramework):
             local_ip = ipaddress.ip_address("0.0.0.0")
             to_ip = ipaddress.ip_address(to_address)
             if to_ip.version == 4 and to_ip is not local_ip:
-                ip_port = to_address + ":" + network_info['port']
+                ip_port = to_address + ":" + str(network_info['port'])
 
         from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
         from_connection.log.info(f"from_num_peers = {from_num_peers}")
