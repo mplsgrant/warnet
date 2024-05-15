@@ -331,7 +331,7 @@ class WarnetTestFramework(BitcoinTestFramework):
         config.load_incluster_config()
         v1 = client.CoreV1Api()
         service = v1.read_namespaced_service(name="warnet-tank-000010-service", namespace="warnet")
-        ip = service.spec
+        ip = service.spec.cluster_ip
         to_connection.log.info(f"service ip: {ip}")
 
         for network_info in to_connection.getnetworkinfo()["localaddresses"]:
