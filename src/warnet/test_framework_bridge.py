@@ -324,7 +324,7 @@ class WarnetTestFramework(BitcoinTestFramework):
                 since there will be a race between the actual connection and performing
                 the assertions before one node shuts down.
         """
-        config.load_kube_config()
+        config.load_kube_config(config_file='~/.kube/config')
         v1 = client.CoreV1Api()
         print("Listing pods with their IPs:")
         pods = v1.list_pod_for_all_namespaces(watch=False)
