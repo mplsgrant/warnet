@@ -324,17 +324,18 @@ class WarnetTestFramework(BitcoinTestFramework):
                 since there will be a race between the actual connection and performing
                 the assertions before one node shuts down.
         """
-        config.load_incluster_config()
-        v1 = client.CoreV1Api()
-        print("Listing pods with their IPs:")
-        pods = v1.list_pod_for_all_namespaces(watch=False)
-        for pod in pods.items:
-            print(f"{pod.metadata.name}\t{pod.status.pod_ip}")
 
         from_connection = self.nodes[a]
         to_connection = self.nodes[b]
-        from_num_peers = 1 + len(from_connection.getpeerinfo())
-        to_num_peers = 1 + len(to_connection.getpeerinfo())
+
+        config.load_incluster_config()
+        v1 = client.CoreV1Api()
+        namespace = v1.list_namespace()[0]
+        to_connection.log.info(f"namespace: {namespace}")
+        pods = v1.list_namespaced_pod(namespace=namespace)
+        for pod in pods.items:
+            to_connection.log.info(f"pod: {pod}")
+
 
         for network_info in to_connection.getnetworkinfo()["localaddresses"]:
             to_address = network_info["address"]
