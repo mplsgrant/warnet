@@ -341,11 +341,6 @@ class WarnetTestFramework(BitcoinTestFramework):
             if from_ip.version == 4 and from_ip is not local_ip:
                 from_ip_port = from_address + ":" + str(network_info["port"])
 
-
-        # for peer in from_connection.getpeerinfo():
-        #     if peer["addrbind"] == to_ip_port:
-        #         return # a already has a connection with b
-
         from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
         from_connection.log.info(f"from_num_peers = {from_num_peers}")
         from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
@@ -373,6 +368,11 @@ class WarnetTestFramework(BitcoinTestFramework):
         # See comments in net_processing:
         # * Must have a version message before anything else
         # * Must have a verack message before anything else
+
+        for peer in from_connection.getpeerinfo():
+            from_connection.log.info(f"from_connection getpeerinfo:peer addrbind: {peer['addrbind']} - to_ip_port {to_ip_port}")
+
+
         self.wait_until(lambda: any(peer['addrbind'] == to_ip_port for peer in from_connection.getpeerinfo()))
         self.wait_until(lambda: any(peer['addrbind'] == from_ip_port for peer in to_connection.getpeerinfo()))
         self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
