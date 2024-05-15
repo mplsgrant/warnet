@@ -382,6 +382,7 @@ class WarnetTestFramework(BitcoinTestFramework):
             try:
                 peer_ip = ipaddress.ip_address(peer['addr'])
             except ValueError:
+                to_connection.log.info(f"peer: {peer['addr']}")
                 to_connection.log.info(f"socket output: {socket.gethostbyname(peer['addr'])}")
 
         self.wait_until(lambda: any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo()))
