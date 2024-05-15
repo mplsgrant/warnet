@@ -342,15 +342,6 @@ class WarnetTestFramework(BitcoinTestFramework):
             if from_ip.version == 4 and from_ip is not local_ip:
                 from_ip_port = from_address + ":" + str(network_info["port"])
 
-        from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
-        from_connection.log.info(f"from_num_peers = {from_num_peers}")
-        from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
-        from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
-        to_connection.log.info(f"to's getnetworkinfo: {to_connection.getnetworkinfo()}")
-        to_connection.log.info(f"to_ip_port: {to_ip_port}")
-        from_connection.log.info(f"FROM PEERINFO: {from_connection.getpeerinfo()}")
-        from_connection.log.info(f"NUM_PEERS: {from_num_peers}")
-
         if peer_advertises_v2 is None:
             peer_advertises_v2 = self.options.v2transport
 
@@ -363,6 +354,15 @@ class WarnetTestFramework(BitcoinTestFramework):
 
         if not wait_for_connect:
             return
+
+        from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
+        from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
+        from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
+        from_connection.log.info(f"from's ip_port: {to_ip_port}")
+        to_connection.log.info(f"to's peer info: {to_connection.getpeerinfo()}")
+        to_connection.log.info(f"to's rpc connection: {to_connection.rpc.rpc_url}")
+        to_connection.log.info(f"to's getnetworkinfo: {to_connection.getnetworkinfo()}")
+        to_connection.log.info(f"to's ip_port: {to_ip_port}")
 
         for peer in from_connection.getpeerinfo():
             from_connection.log.info(f"from_connection getpeerinfo:peer addr: {peer['addr']} - to_ip_port {to_ip_port}")
