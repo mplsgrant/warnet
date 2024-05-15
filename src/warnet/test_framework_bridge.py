@@ -338,6 +338,8 @@ class WarnetTestFramework(BitcoinTestFramework):
         from_connection.log.info(f"from_num_peers = {from_num_peers}")
         from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
         from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
+        to_connection.log.info(f"ip_port: {ip_port}")
+
         if peer_advertises_v2 is None:
             peer_advertises_v2 = self.options.v2transport
 
