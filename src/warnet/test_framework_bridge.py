@@ -379,10 +379,10 @@ class WarnetTestFramework(BitcoinTestFramework):
             to_connection.log.info(f"to_connection getpeerinfo:peer addr: {peer['addr']} - to_ip_port {from_ip_port}")
             maybe = any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo())
             to_connection.log.info(f"maybe: {maybe}")
-            to_connection.log.info(f"to's peer: socket getaddrinfo: {socket.gethostbyname(peer['addr'])}")
-            to_connection.log.info(f"to's peer: ip address:         {ipaddress.ip_address(peer['addr'])}")
-
-            # need to resolve the hostnames of the bitcoin peers
+            try:
+                peer_ip = ipaddress.ip_address(peer['addr'])
+            except ValueError:
+                to_connection.log.info(f"socket output: {socket.gethostbyname(peer['addr'])}")
 
         self.wait_until(lambda: any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo()))
         self.wait_until(lambda: any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo()))
