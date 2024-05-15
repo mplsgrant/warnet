@@ -348,6 +348,8 @@ class WarnetTestFramework(BitcoinTestFramework):
         from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
         to_connection.log.info(f"to's getnetworkinfo: {to_connection.getnetworkinfo()}")
         to_connection.log.info(f"to_ip_port: {to_ip_port}")
+        from_connection.log.info(f"FROM PEERINFO: {from_connection.getpeerinfo()}")
+        from_connection.log.info(f"NUM_PEERS: {from_num_peers}")
 
         if peer_advertises_v2 is None:
             peer_advertises_v2 = self.options.v2transport
@@ -362,8 +364,6 @@ class WarnetTestFramework(BitcoinTestFramework):
         if not wait_for_connect:
             return
 
-        from_connection.log.info(f"FROM PEERINFO: {from_connection.getpeerinfo()}")
-        from_connection.log.info(f"NUM_PEERS: {from_num_peers}")
         # poll until version handshake complete to avoid race conditions
         # with transaction relaying
         # See comments in net_processing:
@@ -373,15 +373,16 @@ class WarnetTestFramework(BitcoinTestFramework):
         for peer in from_connection.getpeerinfo():
             from_connection.log.info(f"from_connection getpeerinfo:peer addr: {peer['addr']} - to_ip_port {to_ip_port}")
             maybe = any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo())
-            from_connection.log.info(f"maybe: {maybe}")
+            from_connection.log.info(f"maybe from : {maybe}")
 
         for peer in to_connection.getpeerinfo():
             to_connection.log.info(f"to_connection getpeerinfo:peer addr: {peer['addr']} - to_ip_port {from_ip_port}")
             maybe = any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo())
             to_connection.log.info(f"maybe: {maybe}")
-            to_connection.log.info(f"socket getaddrinfo: {socket.getaddrinfo(peer['addr'], 18444)}")
+            to_connection.log.info(f"to's peer: socket getaddrinfo: {socket.gethostbyname(peer['addr'])}")
+            to_connection.log.info(f"to's peer: ip address:         {ipaddress.ip_address(peer['addr'])}")
 
-
+            # need to resolve the hostnames of the bitcoin peers
 
         self.wait_until(lambda: any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo()))
         self.wait_until(lambda: any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo()))
