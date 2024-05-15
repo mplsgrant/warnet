@@ -11,13 +11,14 @@ import sys
 import tempfile
 import time
 
+from kubernetes import client, config
+
 from test_framework.authproxy import AuthServiceProxy
 from test_framework.p2p import NetworkThread
 from test_framework.test_framework import (
     TMPDIR_PREFIX,
     BitcoinTestFramework,
     TestStatus,
-    p2p_port
 )
 from test_framework.util import PortSeed, get_rpc_proxy
 from warnet.test_node_bridge import TestNode
@@ -323,6 +324,13 @@ class WarnetTestFramework(BitcoinTestFramework):
                 since there will be a race between the actual connection and performing
                 the assertions before one node shuts down.
         """
+        config.load_kube_config()
+        v1 = client.CoreV1Api()
+        print("Listing pods with their IPs:")
+        pods = v1.list_pod_for_all_namespaces(watch=False)
+        for pod in pods.items:
+            print(f"{pod.metadata.name}\t{pod.status.pod_ip}")
+
         from_connection = self.nodes[a]
         to_connection = self.nodes[b]
         from_num_peers = 1 + len(from_connection.getpeerinfo())
