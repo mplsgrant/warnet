@@ -374,6 +374,11 @@ class WarnetTestFramework(BitcoinTestFramework):
             maybe = any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo())
             from_connection.log.info(f"maybe: {maybe}")
 
+        for peer in to_connection.getpeerinfo():
+            to_connection.log.info(f"from_connection getpeerinfo:peer addrbind: {peer['addr']} - to_ip_port {from_ip_port}")
+            maybe = any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo())
+            to_connection.log.info(f"maybe: {maybe}")
+
         self.wait_until(lambda: any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo()))
         self.wait_until(lambda: any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo()))
         self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
