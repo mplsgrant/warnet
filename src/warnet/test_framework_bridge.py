@@ -371,6 +371,8 @@ class WarnetTestFramework(BitcoinTestFramework):
 
         for peer in from_connection.getpeerinfo():
             from_connection.log.info(f"from_connection getpeerinfo:peer addrbind: {peer['addr']} - to_ip_port {to_ip_port}")
+            maybe = any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo())
+            from_connection.log.info(f"maybe: {maybe}")
 
         self.wait_until(lambda: any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo()))
         self.wait_until(lambda: any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo()))
