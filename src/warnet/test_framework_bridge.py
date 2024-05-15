@@ -328,28 +328,40 @@ class WarnetTestFramework(BitcoinTestFramework):
         to_num_peers = 1 + len(to_connection.getpeerinfo())
 
         for network_info in to_connection.getnetworkinfo()["localaddresses"]:
-            to_address = network_info['address']
+            to_address = network_info["address"]
             local_ip = ipaddress.ip_address("0.0.0.0")
             to_ip = ipaddress.ip_address(to_address)
             if to_ip.version == 4 and to_ip is not local_ip:
-                ip_port = to_address + ":" + str(network_info['port'])
+                to_ip_port = to_address + ":" + str(network_info["port"])
+
+        for network_info in from_connection.getnetworkinfo()["localaddresses"]:
+            from_address = network_info["address"]
+            local_ip = ipaddress.ip_address("0.0.0.0")
+            from_ip = ipaddress.ip_address(from_address)
+            if from_ip.version == 4 and from_ip is not local_ip:
+                from_ip_port = from_address + ":" + str(network_info["port"])
+
+
+        # for peer in from_connection.getpeerinfo():
+        #     if peer["addrbind"] == to_ip_port:
+        #         return # a already has a connection with b
 
         from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
         from_connection.log.info(f"from_num_peers = {from_num_peers}")
         from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
         from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
         to_connection.log.info(f"to's getnetworkinfo: {to_connection.getnetworkinfo()}")
-        to_connection.log.info(f"ip_port: {ip_port}")
+        to_connection.log.info(f"to_ip_port: {to_ip_port}")
 
         if peer_advertises_v2 is None:
             peer_advertises_v2 = self.options.v2transport
 
         if peer_advertises_v2:
-            from_connection.addnode(node=ip_port, command="onetry", v2transport=True)
+            from_connection.addnode(node=to_ip_port, command="onetry", v2transport=True)
         else:
             # skip the optional third argument (default false) for
             # compatibility with older clients
-            from_connection.addnode(ip_port, "onetry")
+            from_connection.addnode(to_ip_port, "onetry")
 
         if not wait_for_connect:
             return
@@ -361,8 +373,8 @@ class WarnetTestFramework(BitcoinTestFramework):
         # See comments in net_processing:
         # * Must have a version message before anything else
         # * Must have a verack message before anything else
-        self.wait_until(lambda: sum(peer['version'] != 0 for peer in from_connection.getpeerinfo()) == from_num_peers)
-        self.wait_until(lambda: sum(peer['version'] != 0 for peer in to_connection.getpeerinfo()) == to_num_peers)
+        self.wait_until(lambda: any(peer['addrbind'] == to_ip_port for peer in from_connection.getpeerinfo()))
+        self.wait_until(lambda: any(peer['addrbind'] == from_ip_port for peer in to_connection.getpeerinfo()))
         self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
         self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in to_connection.getpeerinfo()) == to_num_peers)
         # The message bytes are counted before processing the message, so make
