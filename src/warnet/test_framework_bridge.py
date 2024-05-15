@@ -364,12 +364,6 @@ class WarnetTestFramework(BitcoinTestFramework):
         if not wait_for_connect:
             return
 
-        # poll until version handshake complete to avoid race conditions
-        # with transaction relaying
-        # See comments in net_processing:
-        # * Must have a version message before anything else
-        # * Must have a verack message before anything else
-
         for peer in from_connection.getpeerinfo():
             from_connection.log.info(f"from_connection getpeerinfo:peer addr: {peer['addr']} - to_ip_port {to_ip_port}")
             maybe = any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo())
@@ -386,6 +380,11 @@ class WarnetTestFramework(BitcoinTestFramework):
                 to_connection.log.info(f"peer: {peer['addr']}")
                 to_connection.log.info(f"socket output: {socket.gethostbyname(peer['addr'])}")
 
+        # poll until version handshake complete to avoid race conditions
+        # with transaction relaying
+        # See comments in net_processing:
+        # * Must have a version message before anything else
+        # * Must have a verack message before anything else
         self.wait_until(lambda: any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo()))
         self.wait_until(lambda: any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo()))
         self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
