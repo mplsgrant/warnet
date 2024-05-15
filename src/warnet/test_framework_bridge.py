@@ -372,9 +372,8 @@ class WarnetTestFramework(BitcoinTestFramework):
         for peer in from_connection.getpeerinfo():
             from_connection.log.info(f"from_connection getpeerinfo:peer addrbind: {peer['addrbind']} - to_ip_port {to_ip_port}")
 
-
-        self.wait_until(lambda: any(peer['addrbind'] == to_ip_port for peer in from_connection.getpeerinfo()))
-        self.wait_until(lambda: any(peer['addrbind'] == from_ip_port for peer in to_connection.getpeerinfo()))
+        self.wait_until(lambda: any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo()))
+        self.wait_until(lambda: any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo()))
         self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in from_connection.getpeerinfo()) == from_num_peers)
         self.wait_until(lambda: sum(peer['bytesrecv_per_msg'].pop('verack', 0) >= 21 for peer in to_connection.getpeerinfo()) == to_num_peers)
         # The message bytes are counted before processing the message, so make
