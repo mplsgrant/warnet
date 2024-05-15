@@ -338,6 +338,7 @@ class WarnetTestFramework(BitcoinTestFramework):
         from_connection.log.info(f"from_num_peers = {from_num_peers}")
         from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
         from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
+        to_connection.log.info(f"to's getnetworkinfo: {to_connection.getnetworkinfo()}")
         to_connection.log.info(f"ip_port: {ip_port}")
 
         if peer_advertises_v2 is None:
@@ -353,7 +354,7 @@ class WarnetTestFramework(BitcoinTestFramework):
         if not wait_for_connect:
             return
 
-        from_connection.log.info(f"PEERINFO: {from_connection.getpeerinfo()}")
+        from_connection.log.info(f"FROM PEERINFO: {from_connection.getpeerinfo()}")
         from_connection.log.info(f"NUM_PEERS: {from_num_peers}")
         # poll until version handshake complete to avoid race conditions
         # with transaction relaying
