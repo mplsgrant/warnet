@@ -380,7 +380,8 @@ class WarnetTestFramework(BitcoinTestFramework):
             maybe = any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo())
             to_connection.log.info(f"maybe: {maybe}")
             try:
-                peer_ip = ipaddress.ip_address(peer['addr'])
+                peer_ip = peer['addr'].split(':')[0]
+                peer_ip = ipaddress.ip_address(peer[peer_ip])
             except ValueError:
                 to_connection.log.info(f"peer: {peer['addr']}")
                 to_connection.log.info(f"socket output: {socket.gethostbyname(peer['addr'])}")
