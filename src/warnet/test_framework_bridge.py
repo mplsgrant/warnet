@@ -381,7 +381,7 @@ class WarnetTestFramework(BitcoinTestFramework):
             to_connection.log.info(f"maybe: {maybe}")
             try:
                 peer_ip = peer['addr'].split(':')[0]
-                peer_ip = ipaddress.ip_address(peer[peer_ip])
+                peer_ip = ipaddress.ip_address(peer_ip)
             except ValueError:
                 to_connection.log.info(f"peer: {peer['addr']}")
                 to_connection.log.info(f"socket output: {socket.gethostbyname(peer['addr'])}")
