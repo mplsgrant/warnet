@@ -330,12 +330,8 @@ class WarnetTestFramework(BitcoinTestFramework):
 
         config.load_incluster_config()
         v1 = client.CoreV1Api()
-        namespace = v1.list_namespace()[0]
-        to_connection.log.info(f"namespace: {namespace}")
-        pods = v1.list_namespaced_pod(namespace=namespace)
-        for pod in pods.items:
-            to_connection.log.info(f"pod: {pod}")
-
+        service = v1.read_namespaced_service(name="warnet-tank-000010-service", namespace="warnet")
+        to_connection.log.info(f"service: {service}")
 
         for network_info in to_connection.getnetworkinfo()["localaddresses"]:
             to_address = network_info["address"]
