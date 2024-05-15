@@ -370,7 +370,7 @@ class WarnetTestFramework(BitcoinTestFramework):
         # * Must have a verack message before anything else
 
         for peer in from_connection.getpeerinfo():
-            from_connection.log.info(f"from_connection getpeerinfo:peer addrbind: {peer['addrbind']} - to_ip_port {to_ip_port}")
+            from_connection.log.info(f"from_connection getpeerinfo:peer addrbind: {peer['addr']} - to_ip_port {to_ip_port}")
 
         self.wait_until(lambda: any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo()))
         self.wait_until(lambda: any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo()))
