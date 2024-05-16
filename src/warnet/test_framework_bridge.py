@@ -327,17 +327,6 @@ class WarnetTestFramework(BitcoinTestFramework):
         """
         from_connection = self.nodes[a]
         to_connection = self.nodes[b]
-        from_num_peers = 1 + len(from_connection.getpeerinfo())
-        to_num_peers = 1 + len(to_connection.getpeerinfo())
-
-        config.load_incluster_config()
-        v1 = client.CoreV1Api()
-        service = v1.read_namespaced_service(name="warnet-tank-000006-service", namespace="warnet")
-        endpoints = v1.read_namespaced_endpoints(name="warnet-tank-000006-service", namespace="warnet")
-        inner_ip = endpoints.subsets[0].addresses[0].ip
-        to_connection.log.info(f"SERVICE: {service}")
-        to_connection.log.info(f"ENDPOINTS: {endpoints}")
-        to_connection.log.info(f"inner ip: {inner_ip}")
 
         for network_info in to_connection.getnetworkinfo()["localaddresses"]:
             to_address = network_info["address"]
@@ -366,40 +355,11 @@ class WarnetTestFramework(BitcoinTestFramework):
         if not wait_for_connect:
             return
 
-        from_connection.log.info(f"from's peer info: {from_connection.getpeerinfo()}")
-        from_connection.log.info(f"from's rpc connection: {from_connection.rpc.rpc_url}")
-        from_connection.log.info(f"from's getneworkinfo: {from_connection.getnetworkinfo()}")
-        from_connection.log.info(f"from's ip_port: {from_ip_port}")
-        to_connection.log.info(f"to's peer info: {to_connection.getpeerinfo()}")
-        to_connection.log.info(f"to's rpc connection: {to_connection.rpc.rpc_url}")
-        to_connection.log.info(f"to's getnetworkinfo: {to_connection.getnetworkinfo()}")
-        to_connection.log.info(f"to's ip_port: {to_ip_port}")
-
-        for peer in from_connection.getpeerinfo():
-            from_connection.log.info(f"from_connection getpeerinfo: peer addr: {peer['addr']} - to_ip_port {to_ip_port}")
-            maybe = any(peer['addr'] == to_ip_port for peer in from_connection.getpeerinfo())
-            from_connection.log.info(f"maybe from : {maybe}")
-
-        for peer in to_connection.getpeerinfo():
-            to_connection.log.info(f"to_connection getpeerinfo: peer addr: {peer['addr']} - to_ip_port {from_ip_port}")
-            maybe = any(peer['addr'] == from_ip_port for peer in to_connection.getpeerinfo())
-            to_connection.log.info(f"maybe: {maybe}")
-            try: # we encounter a regular ip address
-                to_peer_ip = peer['addr'].split(':')[0]
-                to_peer_ip = ipaddress.ip_address(to_peer_ip)
-                to_connection.log.info(f"to peer_ip: {to_peer_ip}")
-            except ValueError: # or we encounter a service name
-                to_connection.log.info(f"get_service_ip: {get_service_ip(peer['addr'])}")
-                to_connection.log.info(f"peer: {peer['addr']}")
-                to_connection.log.info(f"socket output: {socket.gethostbyname(peer['addr'])}")
-                to_peer_ip = get_service_ip(peer['addr'])
-
         def get_peer_ip(peer):
             try:  # we encounter a regular ip address
                 return ipaddress.ip_address(peer['addr'].split(':')[0])
             except ValueError:  # or we encounter a service name
                 return get_service_ip(peer['addr'])[1]
-
 
         # poll until version handshake complete to avoid race conditions
         # with transaction relaying
