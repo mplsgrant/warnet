@@ -38,7 +38,7 @@ class LNInit(WarnetTestFramework):
         # divvy up the goods
         print(f"miner total: {miner.getbalance()}")
         self.sync_all()
-        split = miner.getbalance() // len(recv_addrs)
+        split = miner.getbalance() // 2 // len(recv_addrs)
         print(f"split: {split}")
         sends = {}
         for addr in recv_addrs:
