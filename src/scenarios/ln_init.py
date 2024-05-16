@@ -32,13 +32,16 @@ class LNInit(WarnetTestFramework):
         self.log.info("Fund LN wallets")
         miner = ensure_miner(self.nodes[0])
         miner_addr = miner.getnewaddress()
+        print(f"miner_addr: {miner_addr}")
         # 298 block base
         self.generatetoaddress(self.nodes[0], 297, miner_addr)
         # divvy up the goods
         split = miner.getbalance() // len(recv_addrs)
+        print(f"split: {split}")
         sends = {}
         for addr in recv_addrs:
             sends[addr] = split
+        print(f"sends: {sends}")
         miner.sendmany("", sends)
         # confirm funds in block 299
         self.generatetoaddress(self.nodes[0], 1, miner_addr)
