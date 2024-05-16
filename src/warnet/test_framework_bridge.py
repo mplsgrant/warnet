@@ -11,8 +11,6 @@ import sys
 import tempfile
 import time
 
-from kubernetes import client, config
-
 from test_framework.authproxy import AuthServiceProxy
 from test_framework.p2p import NetworkThread
 from test_framework.test_framework import (
@@ -23,6 +21,7 @@ from test_framework.test_framework import (
 from test_framework.util import PortSeed, get_rpc_proxy
 from warnet.test_node_bridge import TestNode
 from warnet.warnet import Warnet
+from scenarios.utils import get_service_ip
 
 
 # Ensure that all RPC calls are made with brand new http connections
@@ -324,15 +323,8 @@ class WarnetTestFramework(BitcoinTestFramework):
                 since there will be a race between the actual connection and performing
                 the assertions before one node shuts down.
         """
-
         from_connection = self.nodes[a]
         to_connection = self.nodes[b]
-
-        config.load_incluster_config()
-        v1 = client.CoreV1Api()
-        service = v1.read_namespaced_service(name="warnet-tank-000010-service", namespace="warnet")
-        ip = service.spec.cluster_ip
-        to_connection.log.info(f"service ip: {ip}")
 
         for network_info in to_connection.getnetworkinfo()["localaddresses"]:
             to_address = network_info["address"]
@@ -382,7 +374,9 @@ class WarnetTestFramework(BitcoinTestFramework):
             try:
                 peer_ip = peer['addr'].split(':')[0]
                 peer_ip = ipaddress.ip_address(peer_ip)
+                to_connection.log.info(f"go peer_ip: {peer_ip}")
             except ValueError:
+                to_connection.log.info(f"get_service_ip: {get_service_ip(peer['addr'])}")
                 to_connection.log.info(f"peer: {peer['addr']}")
                 to_connection.log.info(f"socket output: {socket.gethostbyname(peer['addr'])}")
 
