@@ -11,7 +11,7 @@ def ensure_miner(node):
 
 def get_service_ip(service_name: str, namespace: str = "warnet") -> (IPv4Address | IPv6Address,
                                                                      IPv4Address | IPv6Address):
-    """Given a service name and namespace, returns the services external ip and internal ip"""
+    """Given a service name and namespace, returns the service's external ip and internal ip"""
     config.load_incluster_config()
     v1 = client.CoreV1Api()
     service = v1.read_namespaced_service(name=service_name, namespace=namespace)
