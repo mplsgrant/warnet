@@ -6,10 +6,8 @@ import os
 import pathlib
 import random
 import signal
-import socket
 import sys
 import tempfile
-import time
 
 from kubernetes import client, config
 
