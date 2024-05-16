@@ -421,4 +421,4 @@ class WarnetTestFramework(BitcoinTestFramework):
                                     for peer in from_connection.getpeerinfo()))
         self.wait_until(lambda: any(str(get_peer_ip(peer)) + ":18444" == from_ip_port
                                     and peer["bytesrecv_per_msg"].pop("pong", 0) >= 29
-                                    for peer in to_connection.getpeerinfo()) == to_num_peers)
+                                    for peer in to_connection.getpeerinfo()))
