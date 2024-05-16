@@ -15,10 +15,10 @@ from test_framework.p2p import NetworkThread
 from test_framework.test_framework import (
     TMPDIR_PREFIX,
     BitcoinTestFramework,
+    TestNode,
     TestStatus,
 )
 from test_framework.util import PortSeed, get_rpc_proxy
-from warnet.test_node_bridge import TestNode
 from warnet.warnet import Warnet
 
 
