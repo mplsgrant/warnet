@@ -327,7 +327,9 @@ class WarnetTestFramework(BitcoinTestFramework):
         """
         from_connection = self.nodes[a]
         to_connection = self.nodes[b]
-
+        from_num_peers = 1 + len(from_connection.getpeerinfo())
+        to_num_peers = 1 + len(to_connection.getpeerinfo())
+        
         config.load_incluster_config()
         v1 = client.CoreV1Api()
         service = v1.read_namespaced_service(name="warnet-tank-000006-service", namespace="warnet")
