@@ -11,6 +11,8 @@ import sys
 import tempfile
 import time
 
+from kubernetes import client, config
+
 from test_framework.authproxy import AuthServiceProxy
 from test_framework.p2p import NetworkThread
 from test_framework.test_framework import (
