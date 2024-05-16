@@ -328,6 +328,11 @@ class WarnetTestFramework(BitcoinTestFramework):
         from_connection = self.nodes[a]
         to_connection = self.nodes[b]
 
+        config.load_incluster_config()
+        v1 = client.CoreV1Api()
+        service = v1.read_namespaced_service(name="warnet-tank-000006-service", namespace="warnet")
+        to_connection.log.info(f"SERVICE: {service}")
+
         for network_info in to_connection.getnetworkinfo()["localaddresses"]:
             to_address = network_info["address"]
             local_ip = ipaddress.ip_address("0.0.0.0")
