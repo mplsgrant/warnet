@@ -9,8 +9,7 @@ import signal
 import sys
 import tempfile
 
-from kubernetes import client, config
-
+from scenarios.utils import get_service_ip
 from test_framework.authproxy import AuthServiceProxy
 from test_framework.p2p import NetworkThread
 from test_framework.test_framework import (
@@ -21,7 +20,6 @@ from test_framework.test_framework import (
 from test_framework.util import PortSeed, get_rpc_proxy
 from warnet.test_node_bridge import TestNode
 from warnet.warnet import Warnet
-from scenarios.utils import get_service_ip
 
 
 # Ensure that all RPC calls are made with brand new http connections
