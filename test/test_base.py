@@ -1,10 +1,11 @@
 import atexit
 import os
+import random
+import string
 import sys
 import threading
 from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen, run
-from tempfile import mkdtemp
 from time import sleep
 
 from cli.rpc import rpc_call
@@ -15,17 +16,14 @@ from warnet.warnet import Warnet
 class TestBase:
     def __init__(self):
         # Warnet server stdout gets logged here
-        self.tmpdir = Path(mkdtemp(prefix="warnet-test-"))
+        self.tmpdir = Path("warnet-test-zone")
 
         os.environ["XDG_STATE_HOME"] = f"{self.tmpdir}"
 
         self.logfilepath = self.tmpdir / "warnet" / "warnet.log"
 
-        # Use the same dir name for the warnet network name
-        # but sanitize hyphens which make docker frown :-(
-        self.network_name = self.tmpdir.name.replace("-", "")
-        # also replace underscores which throws off k8s
-        self.network_name = self.tmpdir.name.replace("_", "")
+        characters = string.ascii_lowercase + string.digits
+        self.network_name = 'warnet-' + ''.join(random.choice(characters) for _ in range(16))
 
         self.server = None
         self.server_thread = None
@@ -44,19 +42,21 @@ class TestBase:
             print(f"Invalid backend {self.backend}")
             sys.exit(1)
 
-        print("\nWarnet test base started")
+        print(f"\nWarnet test base started - {self.network_name}")
 
     def cleanup(self, signum=None, frame=None):
+        print(f"{self.network_name} - Cleaning up")
+
         if self.server is None:
             return
 
         try:
-            print("\nStopping network")
+            print(f"\n{self.network_name} - Stopping network")
             if self.network:
                 self.warcli("network down")
                 self.wait_for_all_tanks_status(target="stopped", timeout=60, interval=1)
 
-            print("\nStopping server")
+            print(f"\n{self.network_name} - Stopping server")
             self.warcli("stop", False)
         except Exception as e:
             # Remove the temporary docker network when we quit.
@@ -78,6 +78,7 @@ class TestBase:
 
     # Execute a warcli RPC using command line (always returns string)
     def warcli(self, str, network=True):
+        print(f"{self.network_name} - warcli {str}")
         cmd = ["warcli"] + str.split()
         if network:
             cmd += ["--network", self.network_name]
@@ -89,6 +90,7 @@ class TestBase:
 
     # Execute a warnet RPC API call directly (may return dict or list)
     def rpc(self, method, params=None):
+        print(f"{self.network_name} - calling rpc: {method} {params or ''}")
         return rpc_call(method, params)
 
     # Repeatedly execute an RPC until it succeeds
@@ -112,6 +114,7 @@ class TestBase:
         #       maybe also ensure that no conflicting docker networks exist
 
         if self.backend == "k8s":
+            print(f"{self.network_name} - attach to kubectl logs")
             # For kubernetes we assume the server is started outside test base
             # but we can still read its log output
             self.server = Popen(
@@ -140,7 +143,6 @@ class TestBase:
         self.server_thread.start()
 
         # doesn't require anything container-related
-        print("\nWaiting for RPC")
         self.wait_for_rpc("scenarios_available")
 
     # Quit
@@ -157,6 +159,7 @@ class TestBase:
                 raise Exception("Timed out waiting for predicate Truth")
 
     def get_tank(self, index):
+        print(f"{self.network_name} - getting tank {index}")
         wn = Warnet.from_network(self.network_name)
         return wn.tanks[index]
 
