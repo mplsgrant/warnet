@@ -2,13 +2,8 @@
 import queue
 from decimal import Decimal
 from collections import defaultdict
-import json
-import logging
-import os
 import requests
-from requests.auth import HTTPBasicAuth
 import struct
-import sys
 import zmq
 
 from scenarios.utils import get_service_ip
@@ -18,14 +13,6 @@ from warnet.test_framework_bridge import WarnetTestFramework
 from test_framework.authproxy import JSONRPCException
 
 num_MB = 40
-
-# # Configure logging settings
-# logging.basicConfig(
-#     stream=sys.stdout,
-#     level=logging.INFO,
-#     format='%(asctime)s - %(message)s',
-#     datefmt='%Y-%m-%d %H:%M:%S'
-# )
 
 # Replace with cluster mempool threshholds
 fee_url = 'https://mempool.space/api/v1/fees/recommended'
@@ -39,6 +26,7 @@ CYCLE_THRESH = 1
 
 def cli_help():
     return "Run an anti-cycling defense"
+
 
 def run_anticycle(node: TestNode, channel: None | queue.Queue, logging):
     '''
@@ -212,7 +200,7 @@ def run_anticycle(node: TestNode, channel: None | queue.Queue, logging):
         context.term()
 
 
-class ReplacementCyclingTest(WarnetTestFramework):
+class AntiCyclingTest(WarnetTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 2
@@ -222,4 +210,4 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
 
 if __name__ == '__main__':
-    ReplacementCyclingTest().main()
+    AntiCyclingTest().main()
