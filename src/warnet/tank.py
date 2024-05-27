@@ -54,7 +54,7 @@ class Tank:
         self.rpc_password = "2themoon"
         self.zmqblockport = 28332
         self.zmqtxport = 28333
-        self.zmqpubsequenceport = 18332
+        self.zmqpubsequenceport = 28334
         self._suffix = None
         self._ipv4 = None
         self._exporter_name = None
