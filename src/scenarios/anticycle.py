@@ -25,7 +25,7 @@ num_MB = 40
 CYCLE_THRESH = 1
 
 def cli_help():
-    return "Run an anti-cycling defense (v2)"
+    return "Run an anti-cycling defense - based on instagibbs' work (v2)"
 
 
 def run_anticycle(node: TestNode, logging):
