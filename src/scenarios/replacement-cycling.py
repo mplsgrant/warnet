@@ -257,7 +257,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         (bob_parent_tx, bob_child_tx) = generate_parent_child_tx(wallet, coin_2, parent_seckey.get_pubkey(), 1)
 
         self.log.info(f"Bob makes the Parent Txn ({bob_parent_tx.hash[0:7]}) "
-                      "& Child Txn ({bob_child_tx.hash[0:7]} using Coin_2.")
+                      f"& Child Txn ({bob_child_tx.hash[0:7]} using Coin_2.")
 
         (ab_commitment_tx, alice_timeout_tx, bob_preimage_tx) = create_chan_state(ab_funding_txid,
                                                                                   0,

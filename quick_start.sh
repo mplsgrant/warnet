@@ -149,7 +149,7 @@ print_message "" "" ""
 just start
 just p &
 sleep 1
-warcli network start
+warcli network start src/graphs/alicebob.graphml
 sleep 1
 while warcli network connected | grep -q "False"; do
     sleep 2
@@ -158,3 +158,6 @@ print_message "" "🥳" ""
 print_message "" "Run the following command to enter into the python virtual environment..." ""
 print_message "" "    source .venv/bin/activate" "$BOLD"
 print_partial_message "   After that, you can run " "warcli" " to start running Warnet commands." "$BOLD"
+print_partial_message "   Consider starting up 'anticycle' with " "warcli scenarios run anticycle" "." "$BOLD"
+print_partial_message "   Then, see if it will block a replacement cycling attack with " "warcli scenarios run replacement-cycling" "." "$BOLD"
+print_partial_message "   To view the logs of the attack run " "kubectl logs pod/rpc-0 " "." "$BOLD"
