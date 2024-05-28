@@ -30,7 +30,7 @@ CYCLE_THRESH = 1
 
 
 def cli_help():
-    return "Run an anti-cycling defense (v1)"
+    return "Run an anti-cycling defense - based on instagibbs' work (v1)"
 
 def run_anticycle(node: TestNode, channel: None | queue.Queue, logging):
     '''
