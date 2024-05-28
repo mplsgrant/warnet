@@ -166,5 +166,5 @@ print_partial_message "" "" "" ""
 print_partial_message "   To stop a scenario run " "warcli scenarios stop <pid from 'warcli scenarios active'> " "." "$BOLD"
 print_partial_message "   To quit run " "just stop" "." "$BOLD"
 print_partial_message "" "" "" ""
-print_partial_message "   To start over just run " "./quickstart.sh" " again." "$BOLD"
+print_partial_message "   To start over just run " "./quick_start.sh" " again." "$BOLD"
 
