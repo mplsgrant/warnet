@@ -168,7 +168,7 @@ print_message "" "" ""
 just start
 just p &
 sleep 1
-warcli network start
+warcli network start src/graphs/alicebob.graphml
 sleep 1
 while warcli network connected | grep -q "False"; do
     sleep 2
