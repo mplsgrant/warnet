@@ -116,7 +116,7 @@ def run_anticycle(node: TestNode, logging):
                 logging.info(f" - anticycle - Dummy cache: {len(dummy_cache)}, {dummy_cache_size / 1000000}/{num_MB}MB")
 
             if label == "A":
-                logging.info(f"Tx {txid} added")
+                logging.info(f" - anticycle - Tx {txid} added")
                 entry = node.getmempoolentry(txid)
                 if entry is None:
                     utxos_being_doublespent.clear()
