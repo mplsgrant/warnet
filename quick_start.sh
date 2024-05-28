@@ -176,4 +176,18 @@ done
 print_message "" "🥳" ""
 print_message "" "Run the following command to enter into the python virtual environment..." ""
 print_message "" "    source .venv/bin/activate" "$BOLD"
+<<<<<<< HEAD
 print_partial_message "   After that, you can run " "warcli help" " to start running Warnet commands." "$BOLD"
+=======
+print_partial_message "   After that, you can run " "warcli --help" " to explore Warnet commands." "$BOLD"
+print_partial_message "" "" "" ""
+print_partial_message "   Consider starting up 'anticycle' with " "warcli scenarios run anticycle" "." "$BOLD"
+print_partial_message "   Then, see if it will block a replacement cycling attack with " "warcli scenarios run replacement-cycling" "." "$BOLD"
+print_partial_message "   To view the logs of the attack run " "kubectl logs pod/rpc-0 " "." "$BOLD"
+print_partial_message "" "" "" ""
+print_partial_message "   To stop a scenario run " "warcli scenarios stop <pid from 'warcli scenarios active'> " "." "$BOLD"
+print_partial_message "   To quit run " "just stop" "." "$BOLD"
+print_partial_message "" "" "" ""
+print_partial_message "   To start over just run " "./quickstart.sh" " again." "$BOLD"
+
+>>>>>>> 2bd8b83 (improve instructions)
