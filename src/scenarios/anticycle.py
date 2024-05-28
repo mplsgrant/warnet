@@ -97,7 +97,10 @@ def run_anticycle(node: TestNode, logging):
     logging.info("Getting Top Block fee")
 
     # "Top block" is considered next three blocks
-    topblock_rate_btc_kvb = node.estimatesmartfee(3)["feerate"]
+    try:
+        topblock_rate_btc_kvb = node.estimatesmartfee(3)["feerate"]
+    except KeyError:
+        topblock_rate_btc_kvb = 0.00010000
 
     try:
         while True:
@@ -214,7 +217,10 @@ def run_anticycle(node: TestNode, logging):
                     utxos_being_doublespent.clear()
                     cycled_tx_cache.clear()
                     cycled_tx_cache_size = 0
-                topblock_rate_btc_kvb = node.estimatesmartfee(3)["feerate"]
+                try:
+                    topblock_rate_btc_kvb = node.estimatesmartfee(3)["feerate"]
+                except KeyError:
+                    topblock_rate_btc_kvb = 0.00010000
     except KeyboardInterrupt:
         logging.info(" - anticycle - Program interrupted by user")
     finally:
