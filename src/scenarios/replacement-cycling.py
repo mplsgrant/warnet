@@ -6,7 +6,7 @@
 # https://github.com/ariard/bitcoin/blob/30f5d5b270e4ff195e8dcb9ef6b7ddcc5f6a1bf2/test/functional/mempool_replacement_cycling.py#L5
 
 
-"""Test replacement cyling attacks against Lightning channels"""
+"""Test replacement cycling attacks against Lightning channels"""
 
 from test_framework.key import (
         ECKey
