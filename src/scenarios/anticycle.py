@@ -96,11 +96,18 @@ def run_anticycle(node: TestNode, logging):
 
     logging.info("Getting Top Block fee")
 
+    # If we can't estimate blocks in a scenario, we just
+    # assume anything we see can be mined.
+    # Fix this post-cluster mempool with "next block"
+    # chunk feerate checks.
+    MINRATE = 0.00001000
+
+
     # "Top block" is considered next three blocks
     try:
         topblock_rate_btc_kvb = node.estimatesmartfee(3)["feerate"]
     except KeyError:
-        topblock_rate_btc_kvb = 0.00010000
+        topblock_rate_btc_kvb = MINRATE
 
     try:
         while True:
@@ -119,33 +126,38 @@ def run_anticycle(node: TestNode, logging):
                 logging.info(f" - anticycle - Tx {txid} added")
                 entry = node.getmempoolentry(txid)
                 if entry is None:
+                    logging.info(f" - anticycle - {txid} mempool entry not found in when fetched")
                     utxos_being_doublespent.clear()
                     continue
-                if entry['ancestorcount'] != 1:
-                    # Only supporting singletons for now ala HTLC-X transactions
-                    # Can extend to 1P1C pretty easily.
-                    utxos_being_doublespent.clear()
-                    continue
-
+                # We are allowing "packages" of ancestors.
+                # What we really want is the mempool entry's chunk feerate.
+                # And we actually don't want to track in-mempool utxos, only
+                # confirmed.
                 tx_rate_btc_kvb = Decimal(entry['fees']['ancestor']) / entry['ancestorsize'] * 1000
                 new_top_block = tx_rate_btc_kvb >= topblock_rate_btc_kvb
                 if new_top_block:
+                    logging.info(f" - anticycle - Transaction top block {txid}")
                     raw_tx = node.getrawtransaction(txid, True)
                     # Might have already been evicted/mined/etc
                     if raw_tx is None:
+                        logging.info(f" - anticycle - {txid} not found in mempool when fetched")
                         utxos_being_doublespent.clear()
                         continue
-                    tx_bytes = bytes.fromhex(raw_tx["hex"])
 
+                    logging.info(f" - anticycle - Transaction dummy cached {txid}")
                     # Cache tx to make sure we see it when it's being removed later
                     # FIXME get a better notification stream
                     dummy_cache[txid] = raw_tx
                     dummy_cache_size += len(raw_tx["hex"]) / 2
 
                     add_tx_prevouts = [(tx_input['txid'], tx_input['vout']) for tx_input in raw_tx["vin"]]
+                    logging.info(f" - anticycle - prevouts being spent by new tx: {add_tx_prevouts}")
+
+                    logging.info(f" - anticycle - prevouts from removed transactions: {utxos_being_doublespent}")
 
                     for prevout in add_tx_prevouts:
                         if prevout not in utxos_being_doublespent:
+                            logging.info(f" - anticycle - {prevout} went from unspent to spent")
                             # Bottom->Top, clear cached transaction if any
                             if prevout in utxo_cache:
                                 logging.info(f"Deleting cache entry for {(tx_input['txid'], tx_input['vout'])}")
@@ -153,6 +165,7 @@ def run_anticycle(node: TestNode, logging):
                                 del cycled_tx_cache[utxo_cache[prevout]]
                                 del utxo_cache[prevout]
                         else:
+                            logging.info(f" - anticycle - {prevout} went from spent to spent")
                             # Top->Top, cache if entry is empty
                             if prevout not in utxo_cache and utxo_cycled_count[prevout] >= CYCLE_THRESH:
                                 # Get replaced txid and full tx from dummy_cache
@@ -173,6 +186,7 @@ def run_anticycle(node: TestNode, logging):
 
                     # Handle Top->Bottom: There are top block spends now unspent!
                     if len(utxos_being_doublespent) > 0:
+                        logging.info(f" - anticycle - {len(utxos_being_doublespent)} utxos going spent to unspent")
                         # things were double-spent and not removed with top block
                         for unspent_prevout, _ in utxos_being_doublespent.items():
                             # Count it first
@@ -220,7 +234,7 @@ def run_anticycle(node: TestNode, logging):
                 try:
                     topblock_rate_btc_kvb = node.estimatesmartfee(3)["feerate"]
                 except KeyError:
-                    topblock_rate_btc_kvb = 0.00010000
+                    topblock_rate_btc_kvb = MINRATE
     except KeyboardInterrupt:
         logging.info(" - anticycle - Program interrupted by user")
     finally:
