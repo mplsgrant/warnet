@@ -21,14 +21,28 @@ class InspectIP(WarnetTestFramework):
     def run_test(self):
         config.load_incluster_config()
         v1 = client.CoreV1Api()
-        service = v1.read_namespaced_service(name="warnet-tank-000000-service",
-                                             namespace="warnet")
+
         endpoints = v1.read_namespaced_endpoints(name="warnet-tank-000000-service",
                                                  namespace="warnet")
+        self.log.info("_____warnet-tank-000000-service_____")
         self.log.info(f"subsets: {endpoints.subsets}")
         self.log.info(f"subsets[0].addresses: {endpoints.subsets[0].addresses}")
-        inner_ip = endpoints.subsets[0].addresses[0].ip  # Does our infra ensure 0th subset and address?
-        return ip_address(service.spec.cluster_ip), ip_address(inner_ip)
+        self.log.info(f"endpoints.subsets[0].addresses[0].ip{endpoints.subsets[0].addresses[0].ip}")
+
+        endpoints = v1.read_namespaced_endpoints(name="warnet-tank-000001-service",
+                                                 namespace="warnet")
+        self.log.info("_____warnet-tank-000001-service_____")
+        self.log.info(f"subsets: {endpoints.subsets}")
+        self.log.info(f"subsets[0].addresses: {endpoints.subsets[0].addresses}")
+        self.log.info(f"endpoints.subsets[0].addresses[0].ip{endpoints.subsets[0].addresses[0].ip}")
+
+
+        endpoints = v1.read_namespaced_endpoints(name="warnet-tank-000002-service",
+                                                 namespace="warnet")
+        self.log.info("_____warnet-tank-000002-service_____")
+        self.log.info(f"subsets: {endpoints.subsets}")
+        self.log.info(f"subsets[0].addresses: {endpoints.subsets[0].addresses}")
+        self.log.info(f"endpoints.subsets[0].addresses[0].ip{endpoints.subsets[0].addresses[0].ip}")
 
 
 if __name__ == "__main__":
