@@ -17,5 +17,15 @@ def get_service_ip(service_name: str, namespace: str = "warnet") -> (IPv4Address
     v1 = client.CoreV1Api()
     service = v1.read_namespaced_service(name=service_name, namespace=namespace)
     endpoints = v1.read_namespaced_endpoints(name=service_name, namespace=namespace)
-    inner_ip = endpoints.subsets[0].addresses[0].ip # Does our infra ensure 0th subset and address?
-    return ip_address(service.spec.cluster_ip), ip_address(inner_ip)
+
+    # Does our infra ensure 0th subset and address?
+    try:
+        initial_subset = endpoints.subsets[0]
+    except IndexError:
+        raise f"{service_name}'s endpoint does not have an initial subset"
+    try:
+        initial_address = initial_subset.addresses[0]
+    except IndexError:
+        raise f"{service_name}'s initial subset does not have an initial address"
+
+    return ip_address(service.spec.cluster_ip), ip_address(initial_address.ip)
