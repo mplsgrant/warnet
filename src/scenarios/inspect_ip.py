@@ -9,7 +9,7 @@ from ipaddress import IPv4Address, IPv6Address, ip_address
 from kubernetes import client, config
 
 def cli_help():
-    return "Generate blocks over time. Options: [--allnodes | --interval=<number>]"
+    return "review subset theory; run this to see logs: kubectl logs pod/rpc-0"
 
 
 class InspectIP(WarnetTestFramework):
