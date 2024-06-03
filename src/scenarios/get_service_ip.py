@@ -58,7 +58,7 @@ class GetServiceIp(WarnetTestFramework):
         self.connect_nodes(6, 7)
         self.sync_all()
 
-        services = v1.list_service_for_all_namespaces()
+        services = v1.list_namespaced_service('warnet')
         self.log.info(f"All services: {services}")
 
         while not self.warnet.network_connected():
