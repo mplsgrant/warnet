@@ -24,7 +24,7 @@ class GetServiceIp(WarnetTestFramework):
         )
 
     def run_test(self):
-        # All permutations of directed graph with zero, one, or two inputs/outputs
+        # All permutations of directed acyclic graph with zero, one, or two inputs/outputs
         #
         # | Node | In | Out | Con In | Con Out |
         # |------+----+-----+--------+---------|
@@ -54,6 +54,8 @@ class GetServiceIp(WarnetTestFramework):
         self.connect_nodes(5, 6)
         self.connect_nodes(6, 7)
 
+
+
         while not self.warnet.network_connected():
             sleep(1)
 
@@ -72,6 +74,8 @@ class GetServiceIp(WarnetTestFramework):
         five_peers = self.nodes[5].getpeerinfo()
         six_peers = self.nodes[6].getpeerinfo()
         seven_peers = self.nodes[7].getpeerinfo()
+
+        self.log.info(f"zero_peers: {zero_peers}")
 
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in zero_peers), f"Could not find {self.options.network_name}-tank-000002-service"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000002-service"
