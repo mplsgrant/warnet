@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import subprocess
 from time import sleep
 
 from scenarios.utils import  ensure_miner, get_service_ip
@@ -8,6 +9,18 @@ from warnet.test_framework_bridge import WarnetTestFramework
 
 def cli_help():
     return "Test getting ip addresses from services"
+
+
+def run_kubectl_command(command):
+    try:
+        # Run the kubectl command
+        result = subprocess.run(['kubectl'] + command.split(),
+                                capture_output=True, text=True, check=True)
+        # Return the standard output
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        # Return the standard error if the command fails
+        return f"Error: {e.stderr}"
 
 
 class GetServiceIp(WarnetTestFramework):
@@ -77,6 +90,9 @@ class GetServiceIp(WarnetTestFramework):
 
         self.log.info(f"zero_peers: {zero_peers}")
 
+        got_all = run_kubectl_command("get all")
+        self.log.info(f"kubectl get all: {got_all}")
+
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in zero_peers), f"Could not find {self.options.network_name}-tank-000002-service"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000002-service"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000003-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000003-service"
@@ -100,3 +116,4 @@ class GetServiceIp(WarnetTestFramework):
 
 if __name__ == "__main__":
     GetServiceIp().main()
+
