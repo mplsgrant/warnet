@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-
-import subprocess
+from kubernetes import client, config
 from time import sleep
 
 from scenarios.utils import  ensure_miner, get_service_ip
@@ -9,18 +8,6 @@ from warnet.test_framework_bridge import WarnetTestFramework
 
 def cli_help():
     return "Test getting ip addresses from services"
-
-
-def run_kubectl_command(command):
-    try:
-        # Run the kubectl command
-        result = subprocess.run(['kubectl'] + command.split(),
-                                capture_output=True, text=True, check=True)
-        # Return the standard output
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        # Return the standard error if the command fails
-        return f"Error: {e.stderr}"
 
 
 class GetServiceIp(WarnetTestFramework):
@@ -57,6 +44,10 @@ class GetServiceIp(WarnetTestFramework):
         #       │      ∧                         │      ∧
         #  B ───┴──────╯                    1 ───┴──────╯
 
+
+        config.load_kube_config()
+        v1 = client.CoreV1Api()
+
         self.connect_nodes(0, 2)
         self.connect_nodes(1, 2)
         self.connect_nodes(1, 3)
@@ -66,8 +57,10 @@ class GetServiceIp(WarnetTestFramework):
         self.connect_nodes(5, 4)
         self.connect_nodes(5, 6)
         self.connect_nodes(6, 7)
+        self.sync_all()
 
-
+        services = v1.list_service_for_all_namespaces()
+        self.log.info(f"All services: {services}")
 
         while not self.warnet.network_connected():
             sleep(1)
@@ -90,8 +83,7 @@ class GetServiceIp(WarnetTestFramework):
 
         self.log.info(f"zero_peers: {zero_peers}")
 
-        got_all = run_kubectl_command("get all")
-        self.log.info(f"kubectl get all: {got_all}")
+
 
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in zero_peers), f"Could not find {self.options.network_name}-tank-000002-service"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000002-service"
