@@ -6,29 +6,29 @@ from pathlib import Path
 
 from test_base import TestBase
 
-graph_file_path = Path(os.path.dirname(__file__)) / "data" / "permutations.graphml"
+dag_unconnected_graph = Path(os.path.dirname(__file__)) / "data" / "dag_unconnected.graphml"
+dag_base = TestBase()
 
-base = TestBase()
-
-if base.backend == "k8s":
-    base.start_server()
-    print(base.warcli(f"network start {graph_file_path}"))
-    base.wait_for_all_tanks_status(target="running")
-    base.wait_for_all_edges()
+if dag_base.backend == "k8s":
+    dag_base.start_server()
+    print(dag_base.warcli(f"network start {dag_unconnected_graph}"))
+    dag_base.wait_for_all_tanks_status(target="running")
+    dag_base.wait_for_all_edges()
 
     # Start scenario
-    base.warcli(f"scenarios run get_service_ip --network_name={base.network_name}")
+    dag_base.warcli(f"scenarios run get_service_ip --network_name={dag_base.network_name}")
 
     counter = 0
-    while (len(base.rpc("scenarios_list_running")) == 1
-           and base.rpc("scenarios_list_running")[0]["active"]):
+    while (len(dag_base.rpc("scenarios_list_running")) == 1
+           and dag_base.rpc("scenarios_list_running")[0]["active"]):
         time.sleep(1)
         counter += 1
-        if counter > 30:
-            pid = base.rpc("scenarios_list_running")[0]['pid']
-            base.warcli(f"scenarios stop {pid}", False)
-            assert counter < 30
+        if counter > 60:
+            pid = dag_base.rpc("scenarios_list_running")[0]['pid']
+            dag_base.warcli(f"scenarios stop {pid}", False)
+            print("get_service_ip_test took longer than one minute. Fail.")
+            assert counter < 60
 else:
-    print(f"get_service_ip_test does not test {base.backend}")
+    print(f"get_service_ip_test (connected) does not test {dag_base.backend}")
     
-base.stop_server()
+dag_base.stop_server()

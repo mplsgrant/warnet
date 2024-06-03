@@ -24,9 +24,6 @@ class GetServiceIp(WarnetTestFramework):
         )
 
     def run_test(self):
-        while not self.warnet.network_connected():
-            sleep(1)
-
         # All permutations of directed graph with zero, one, or two inputs/outputs
         #
         # | Node | In | Out | Con In | Con Out |
@@ -46,6 +43,19 @@ class GetServiceIp(WarnetTestFramework):
         #       ∧  ╰─> D ─> F ─> G ─> H          ∧  ╰─> 3 ─> 5 ─> 6 ─> 7
         #       │      ∧                         │      ∧
         #  B ───┴──────╯                    1 ───┴──────╯
+
+        self.connect_nodes(0, 2)
+        self.connect_nodes(1, 2)
+        self.connect_nodes(1, 3)
+        self.connect_nodes(2, 3)
+        self.connect_nodes(2, 4)
+        self.connect_nodes(3, 5)
+        self.connect_nodes(5, 4)
+        self.connect_nodes(5, 6)
+        self.connect_nodes(6, 7)
+
+        while not self.warnet.network_connected():
+            sleep(1)
 
         zero_external, zero_internal = get_service_ip(f"{self.options.network_name}-tank-000000-service")
         one_external, one_internal = get_service_ip(f"{self.options.network_name}-tank-000001-service")
