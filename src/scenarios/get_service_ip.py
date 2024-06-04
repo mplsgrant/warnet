@@ -83,8 +83,8 @@ class GetServiceIp(WarnetTestFramework):
 
         self.log.info(f"zero_peers: {zero_peers}")
 
-        assert any(d.get("addr").split(":")[0] == two_internal for d in
-                   zero_peers), f"Could not find {two_internal}"
+        assert any(
+            d.get("addr").split(":")[0] == str(two_internal) for d in zero_peers), f"Could not find {two_internal}"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000002-service"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000003-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000003-service"
         assert any(d.get("addr").split(":")[0] == str(zero_internal) for d in two_peers), f"Could not find {zero_internal}"
