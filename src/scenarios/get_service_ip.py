@@ -61,7 +61,7 @@ class GetServiceIp(WarnetTestFramework):
         services = v1.list_namespaced_service('warnet')
         self.log.info(f"All services: {services}")
         self.log.info(f"network_name: {self.options.network_name}")
-        
+
         while not self.warnet.network_connected():
             sleep(1)
 
@@ -83,9 +83,8 @@ class GetServiceIp(WarnetTestFramework):
 
         self.log.info(f"zero_peers: {zero_peers}")
 
-
-
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in zero_peers), f"Could not find {self.options.network_name}-tank-000002-service"
+        assert any(d.get("addr").split(":")[0] == two_internal for d in
+                   zero_peers), f"Could not find {two_internal}"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000002-service"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000003-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000003-service"
         assert any(d.get("addr").split(":")[0] == str(zero_internal) for d in two_peers), f"Could not find {zero_internal}"
