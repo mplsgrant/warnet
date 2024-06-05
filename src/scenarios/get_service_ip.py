@@ -73,24 +73,42 @@ class GetServiceIp(WarnetTestFramework):
         self.log.info(f"zero_tank_ip_addr: {self.warnet.tanks[0].get_ip_addr()}")
         self.log.info(f"zero_tank_dns_addr: {self.warnet.tanks[0].get_dns_addr()}")
 
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in zero_peers), f"Could not find {self.options.network_name}-tank-000002-service"
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000002-service"
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000003-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000003-service"
-        #assert any(d.get("addr").split(":")[0] == str(zero_internal) for d in two_peers), f"Could not find {zero_internal}"
-        #assert any(d.get("addr").split(":")[0] == str(one_internal) for d in two_peers), f"Could not find {one_internal}"
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000003-service" for d in two_peers), f"Could not find {self.options.network_name}-tank-000003-service"
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000004-service" for d in two_peers), f"Could not find {self.options.network_name}-tank-000004-service"
-        #assert any(d.get("addr").split(":")[0] == str(one_internal) for d in three_peers), f"Could not find {one_internal}"
-        #assert any(d.get("addr").split(":")[0] == str(two_internal) for d in three_peers), f"Could not find {two_internal}"
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000005-service" for d in three_peers), f"Could not find {self.options.network_name}-tank-000005-service"
-        #assert any(d.get("addr").split(":")[0] == str(two_internal) for d in four_peers), f"Could not find {two_internal}"
-        #assert any(d.get("addr").split(":")[0] == str(five_internal) for d in four_peers), f"Could not find {five_internal}"
-        #assert any(d.get("addr").split(":")[0] == str(three_internal) for d in five_peers), f"Could not find {three_internal}"
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000004-service" for d in five_peers), f"Could not find {self.options.network_name}-tank-000004-service"
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000006-service" for d in five_peers), f"Could not find {self.options.network_name}-tank-000006-service"
-        #assert any(d.get("addr").split(":")[0] == str(five_internal) for d in six_peers), f"Could not find {five_internal}"
-        assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000007-service" for d in six_peers), f"Could not find {self.options.network_name}-tank-000007-service"
-        #assert any(d.get("addr").split(":")[0] == str(six_internal) for d in seven_peers), f"Could not find {seven_peers}"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[2].get_dns_addr() for d in
+                   zero_peers), f"Could not find {self.options.network_name}-tank-000002-service"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[2].get_dns_addr() for d in
+                   one_peers), f"Could not find {self.options.network_name}-tank-000002-service"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[3].get_dns_addr() for d in
+                   one_peers), f"Could not find {self.options.network_name}-tank-000003-service"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[0].get_ip_addr() for d in
+                   two_peers), f"Could not find Tank 0's ip addr"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[1].get_ip_addr() for d in
+                   two_peers), f"Could not find Tank 1's ip addr"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[3].get_dns_addr() for d in
+                   two_peers), f"Could not find {self.options.network_name}-tank-000003-service"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[4].get_dns_addr() for d in
+                   two_peers), f"Could not find {self.options.network_name}-tank-000004-service"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[1].get_ip_addr() for d in
+                   three_peers), f"Could not find Tank 1's ip addr"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[2].get_ip_addr() for d in
+                   three_peers), f"Could not find Tank 2's ip addr"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[5].get_dns_addr() for d in
+                   three_peers), f"Could not find {self.options.network_name}-tank-000005-service"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[2].get_ip_addr() for d in
+                   four_peers), f"Could not find Tank 2's ip addr"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[5].get_ip_addr() for d in
+                   four_peers), f"Could not find Tank 5's ip addr"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[3].get_ip_addr() for d in
+                   five_peers), f"Could not find Tank 3's ip addr"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[4].get_dns_addr() for d in
+                   five_peers), f"Could not find {self.options.network_name}-tank-000004-service"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[6].get_dns_addr() for d in
+                   five_peers), f"Could not find {self.options.network_name}-tank-000006-service"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[5].get_ip_addr() for d in
+                   six_peers), f"Could not find Tank 5's ip addr"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[7].get_dns_addr() for d in
+                   six_peers), f"Could not find {self.options.network_name}-tank-000007-service"
+        assert any(d.get("addr").split(":")[0] == self.warnet.tanks[6].get_ip_addr() for d in
+                   seven_peers), f"Could not find Tank 6's ip addr"
 
         self.log.info("Successfully ran the get_service_ip scenario.")
 
