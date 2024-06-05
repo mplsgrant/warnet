@@ -9,7 +9,7 @@ def cli_help():
     return "Connect a complete DAG from a set of unconnected nodes"
 
 
-class GetServiceIp(WarnetTestFramework):
+class ConnectDag(WarnetTestFramework):
     def set_test_params(self):
         # This is just a minimum
         self.num_nodes = 8
@@ -110,4 +110,4 @@ class GetServiceIp(WarnetTestFramework):
         self.log.info("Successfully ran the complete_dag_connection scenario.")
 
 if __name__ == "__main__":
-    GetServiceIp().main()
+    ConnectDag().main()
