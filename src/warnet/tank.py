@@ -137,10 +137,12 @@ class Tank:
         return self.warnet.container_interface.exec_run(self.index, ServiceType.BITCOIN, cmd=cmd)
 
     def get_dns_addr(self) -> str:
-        self.warnet.container_interface.get_tank_dns_addr(self.index)
+        dns_addr = self.warnet.container_interface.get_tank_dns_addr(self.index)
+        return dns_addr
 
     def get_ip_addr(self) -> str:
-        self.warnet.container_interface.get_tank_ip_addr(self.index)
+        ip_addr = self.warnet.container_interface.get_tank_ip_addr(self.index)
+        return ip_addr
     def get_bitcoin_conf(self, nodes: list[str]) -> str:
         conf = CONFIG_BASE
         conf += f" -rpcuser={self.rpc_user}"

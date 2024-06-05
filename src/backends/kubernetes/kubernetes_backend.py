@@ -566,9 +566,9 @@ class KubernetesBackend(BackendInterface):
         service_name = f"{self.network_name}-tank-{index:06d}-service"
         try:
             self.client.read_namespaced_service(name=service_name, namespace="warnet")
-            return service_name
         except ApiValueError as e:
             raise ApiValueError(f"dns addr request for {service_name} raised {str(e)}")
+        return service_name
 
     def get_tank_ip_addr(self, index: int) -> str:
         service_name = f"{self.network_name}-tank-{index:06d}-service"
