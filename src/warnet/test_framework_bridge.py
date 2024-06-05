@@ -339,10 +339,14 @@ class WarnetTestFramework(BitcoinTestFramework):
 
         def get_peer_ip(peer):
             try:  # we encounter a regular ip address
-                return str(ipaddress.ip_address(peer['addr'].split(':')[0]))
+                ip_addr = str(ipaddress.ip_address(peer['addr'].split(':')[0]))
+                self.log.info(f"ip_addr: {ip_addr}")
+                return ip_addr
             except ValueError:  # or we encounter a service name
                 tank_index = int(peer['addr'].split('-')[2])  # NETWORK-tank-INDEX-service
-                return self.warnet.tanks[tank_index].get_ip_addr()
+                ip_addr = self.warnet.tanks[tank_index].get_ip_addr()
+                self.log.info(f"ip_addr from dns: {ip_addr}")
+                return ip_addr
 
         # poll until version handshake complete to avoid race conditions
         # with transaction relaying
