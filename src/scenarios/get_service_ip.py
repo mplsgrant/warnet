@@ -67,7 +67,11 @@ class GetServiceIp(WarnetTestFramework):
         six_peers = self.nodes[6].getpeerinfo()
         seven_peers = self.nodes[7].getpeerinfo()
 
-        self.log.info(f"zero_peers: {two_peers}")
+        self.log.info(f"two_peers: {two_peers}")
+
+        self.log.info(f"zero_tank_ipv4: {self.warnet.tanks[0].ipv4}")
+        self.log.info(f"zero_tank_ip_addr: {self.warnet.tanks[0].get_ip_addr()}")
+        self.log.info(f"zero_tank_dns_addr: {self.warnet.tanks[0].get_dns_addr()}")
 
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in zero_peers), f"Could not find {self.options.network_name}-tank-000002-service"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000002-service"

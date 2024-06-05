@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
+from typing import Optional
 
 
 class ServiceType(Enum):
@@ -106,6 +107,20 @@ class BackendInterface(ABC):
     def get_tank_ipv4(self, index: int) -> str:
         """
         Get the ipv4 address assigned to a bitcoind tank from the backend
+        """
+        raise NotImplementedError("This method should be overridden by child class")
+
+    @abstractmethod
+    def get_tank_dns_addr(self, index: int) -> str:
+        """
+        Get the dns address of the tank (consistent with `getpeerinfo`'s addr field)
+        """
+        raise NotImplementedError("This method should be overridden by child class")
+
+    @abstractmethod
+    def get_tank_ip_addr(self, index: int) -> str:
+        """
+        Get the ip address of the tank (consistent with `getpeerinfo`'s addr field)
         """
         raise NotImplementedError("This method should be overridden by child class")
 
