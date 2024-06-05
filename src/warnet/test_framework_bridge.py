@@ -322,20 +322,6 @@ class WarnetTestFramework(BitcoinTestFramework):
         from_connection = self.nodes[a]
         to_connection = self.nodes[b]
 
-        # for network_info in to_connection.getnetworkinfo()["localaddresses"]:
-        #     to_address = network_info["address"]
-        #     local_ip = ipaddress.ip_address("0.0.0.0")
-        #     to_ip = ipaddress.ip_address(to_address)
-        #     if to_ip.version == 4 and to_ip is not local_ip:
-        #         to_ip_port = to_address + ":" + str(network_info["port"])
-        #
-        # for network_info in from_connection.getnetworkinfo()["localaddresses"]:
-        #     from_address = network_info["address"]
-        #     local_ip = ipaddress.ip_address("0.0.0.0")
-        #     from_ip = ipaddress.ip_address(from_address)
-        #     if from_ip.version == 4 and from_ip is not local_ip:
-        #         from_ip_port = from_address + ":" + str(network_info["port"])
-
         to_ip_port = f"{self.warnet.network_name}-tank-{b:06}-service"
 
         if peer_advertises_v2 is None:

@@ -27,7 +27,7 @@ class GetServiceIp(WarnetTestFramework):
         while not self.warnet.network_connected():
             sleep(1)
 
-        # All permutations of directed graph with zero, one, or two inputs/outputs
+        # All permutations of directed acyclic graph with zero, one, or two inputs/outputs
         #
         # | Node | In | Out | Con In | Con Out |
         # |------+----+-----+--------+---------|
@@ -46,13 +46,6 @@ class GetServiceIp(WarnetTestFramework):
         #       ∧  ╰─> D ─> F ─> G ─> H          ∧  ╰─> 3 ─> 5 ─> 6 ─> 7
         #       │      ∧                         │      ∧
         #  B ───┴──────╯                    1 ───┴──────╯
-
-        # zero_external, zero_internal = get_service_ip(f"{self.options.network_name}-tank-000000-service")
-        # one_external, one_internal = get_service_ip(f"{self.options.network_name}-tank-000001-service")
-        # two_external, two_internal = get_service_ip(f"{self.options.network_name}-tank-000002-service")
-        # three_external, three_internal = get_service_ip(f"{self.options.network_name}-tank-000003-service")
-        # five_external, five_internal = get_service_ip(f"{self.options.network_name}-tank-000005-service")
-        # six_external, six_internal = get_service_ip(f"{self.options.network_name}-tank-000006-service")
 
         self.connect_nodes(0, 2)
         self.connect_nodes(1, 2)
@@ -74,7 +67,7 @@ class GetServiceIp(WarnetTestFramework):
         six_peers = self.nodes[6].getpeerinfo()
         seven_peers = self.nodes[7].getpeerinfo()
 
-        self.log.info(f"zero_peers: {zero_peers}")
+        self.log.info(f"zero_peers: {two_peers}")
 
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in zero_peers), f"Could not find {self.options.network_name}-tank-000002-service"
         assert any(d.get("addr").split(":")[0] == f"{self.options.network_name}-tank-000002-service" for d in one_peers), f"Could not find {self.options.network_name}-tank-000002-service"
