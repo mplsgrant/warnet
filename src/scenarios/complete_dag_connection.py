@@ -7,7 +7,7 @@ from warnet.test_framework_bridge import WarnetTestFramework
 
 
 def cli_help():
-    return "Test getting ip addresses from services"
+    return "Connect a complete DAG from a set of unconnected nodes"
 
 
 class GetServiceIp(WarnetTestFramework):
@@ -67,11 +67,9 @@ class GetServiceIp(WarnetTestFramework):
         six_peers = self.nodes[6].getpeerinfo()
         seven_peers = self.nodes[7].getpeerinfo()
 
-        self.log.info(f"two_peers: {two_peers}")
-
-        self.log.info(f"zero_tank_ipv4: {self.warnet.tanks[0].ipv4}")
-        self.log.info(f"zero_tank_ip_addr: {self.warnet.tanks[0].get_ip_addr()}")
-        self.log.info(f"zero_tank_dns_addr: {self.warnet.tanks[0].get_dns_addr()}")
+        for tank in self.warnet.tanks:
+            self.log.info(f"Tank {tank.index}: {tank.warnet.tanks[tank.index].get_dns_addr()} pod:"
+                          f" {tank.warnet.tanks[tank.index].get_ip_addr()}")
 
         assert any(d.get("addr").split(":")[0] == self.warnet.tanks[2].get_dns_addr() for d in
                    zero_peers), f"Could not find {self.options.network_name}-tank-000002-service"
@@ -110,7 +108,7 @@ class GetServiceIp(WarnetTestFramework):
         assert any(d.get("addr").split(":")[0] == self.warnet.tanks[6].get_ip_addr() for d in
                    seven_peers), f"Could not find Tank 6's ip addr"
 
-        self.log.info("Successfully ran the get_service_ip scenario.")
+        self.log.info("Successfully ran the complete_dag_connection scenario.")
 
 if __name__ == "__main__":
     GetServiceIp().main()
