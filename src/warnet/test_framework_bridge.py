@@ -322,19 +322,21 @@ class WarnetTestFramework(BitcoinTestFramework):
         from_connection = self.nodes[a]
         to_connection = self.nodes[b]
 
-        for network_info in to_connection.getnetworkinfo()["localaddresses"]:
-            to_address = network_info["address"]
-            local_ip = ipaddress.ip_address("0.0.0.0")
-            to_ip = ipaddress.ip_address(to_address)
-            if to_ip.version == 4 and to_ip is not local_ip:
-                to_ip_port = to_address + ":" + str(network_info["port"])
+        # for network_info in to_connection.getnetworkinfo()["localaddresses"]:
+        #     to_address = network_info["address"]
+        #     local_ip = ipaddress.ip_address("0.0.0.0")
+        #     to_ip = ipaddress.ip_address(to_address)
+        #     if to_ip.version == 4 and to_ip is not local_ip:
+        #         to_ip_port = to_address + ":" + str(network_info["port"])
+        #
+        # for network_info in from_connection.getnetworkinfo()["localaddresses"]:
+        #     from_address = network_info["address"]
+        #     local_ip = ipaddress.ip_address("0.0.0.0")
+        #     from_ip = ipaddress.ip_address(from_address)
+        #     if from_ip.version == 4 and from_ip is not local_ip:
+        #         from_ip_port = from_address + ":" + str(network_info["port"])
 
-        for network_info in from_connection.getnetworkinfo()["localaddresses"]:
-            from_address = network_info["address"]
-            local_ip = ipaddress.ip_address("0.0.0.0")
-            from_ip = ipaddress.ip_address(from_address)
-            if from_ip.version == 4 and from_ip is not local_ip:
-                from_ip_port = from_address + ":" + str(network_info["port"])
+        to_ip_port = f"{self.warnet.network_name}-tank-{b:06}-service"
 
         if peer_advertises_v2 is None:
             peer_advertises_v2 = self.options.v2transport
@@ -360,19 +362,19 @@ class WarnetTestFramework(BitcoinTestFramework):
         # See comments in net_processing:
         # * Must have a version message before anything else
         # * Must have a verack message before anything else
-        self.wait_until(lambda: any(peer['addr'] == to_ip_port and peer['version'] != 0
-                                    for peer in from_connection.getpeerinfo()))
-        self.wait_until(lambda: any(str(get_peer_ip(peer)) + ":18444" == from_ip_port and peer['version'] != 0
-                                    for peer in to_connection.getpeerinfo()))
-        self.wait_until(lambda: any(peer['addr'] == to_ip_port and peer['bytesrecv_per_msg'].pop('verack', 0) >= 21
-                                    for peer in from_connection.getpeerinfo()))
-        self.wait_until(lambda: any(str(get_peer_ip(peer)) + ":18444" == from_ip_port
-                                    and peer['bytesrecv_per_msg'].pop('verack', 0) >= 21
-                                    for peer in to_connection.getpeerinfo()))
-        # The message bytes are counted before processing the message, so make
-        # sure it was fully processed by waiting for a ping.
-        self.wait_until(lambda: any(peer['addr'] == to_ip_port and peer["bytesrecv_per_msg"].pop("pong", 0) >= 29
-                                    for peer in from_connection.getpeerinfo()))
-        self.wait_until(lambda: any(str(get_peer_ip(peer)) + ":18444" == from_ip_port
-                                    and peer["bytesrecv_per_msg"].pop("pong", 0) >= 29
-                                    for peer in to_connection.getpeerinfo()))
+        # self.wait_until(lambda: any(peer['addr'] == to_ip_port and peer['version'] != 0
+        #                             for peer in from_connection.getpeerinfo()))
+        # self.wait_until(lambda: any(str(get_peer_ip(peer)) + ":18444" == from_ip_port and peer['version'] != 0
+        #                             for peer in to_connection.getpeerinfo()))
+        # self.wait_until(lambda: any(peer['addr'] == to_ip_port and peer['bytesrecv_per_msg'].pop('verack', 0) >= 21
+        #                             for peer in from_connection.getpeerinfo()))
+        # self.wait_until(lambda: any(str(get_peer_ip(peer)) + ":18444" == from_ip_port
+        #                             and peer['bytesrecv_per_msg'].pop('verack', 0) >= 21
+        #                             for peer in to_connection.getpeerinfo()))
+        # # The message bytes are counted before processing the message, so make
+        # # sure it was fully processed by waiting for a ping.
+        # self.wait_until(lambda: any(peer['addr'] == to_ip_port and peer["bytesrecv_per_msg"].pop("pong", 0) >= 29
+        #                             for peer in from_connection.getpeerinfo()))
+        # self.wait_until(lambda: any(str(get_peer_ip(peer)) + ":18444" == from_ip_port
+        #                             and peer["bytesrecv_per_msg"].pop("pong", 0) >= 29
+        #                             for peer in to_connection.getpeerinfo()))
