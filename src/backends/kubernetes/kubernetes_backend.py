@@ -4,7 +4,7 @@ import re
 import subprocess
 import time
 from pathlib import Path
-from typing import cast, Optional
+from typing import cast
 
 import yaml
 from backends import BackendInterface, ServiceType
@@ -562,28 +562,32 @@ class KubernetesBackend(BackendInterface):
         else:
             return None
 
-    def get_tank_dns_addr(self, index: int) -> str:
+    def get_tank_dns_addr(self, index: int) -> str | None:
         service_name = f"{self.network_name}-tank-{index:06d}-service"
         try:
             self.client.read_namespaced_service(name=service_name, namespace="warnet")
         except ApiValueError as e:
-            raise ApiValueError(f"dns addr request for {service_name} raised {str(e)}")
+            self.log.info(ApiValueError(f"dns addr request for {service_name} raised {str(e)}"))
+            return None
         return service_name
 
-    def get_tank_ip_addr(self, index: int) -> str:
+    def get_tank_ip_addr(self, index: int) -> str | None:
         service_name = f"{self.network_name}-tank-{index:06d}-service"
         try:
             endpoints = self.client.read_namespaced_endpoints(name=service_name, namespace="warnet")
         except ApiValueError as e:
-            raise ApiValueError(f"ip addr request for {service_name} raised {str(e)}")
+            self.log.info(f"ip addr request for {service_name} raised {str(e)}")
+            return None
         try:
             initial_subset = endpoints.subsets[0]
         except IndexError:
-            raise f"{service_name}'s endpoint does not have an initial subset"
+            self.log.info(f"{service_name}'s endpoint does not have an initial subset")
+            return None
         try:
             initial_address = initial_subset.addresses[0]
         except IndexError:
-            raise f"{service_name}'s initial subset does not have an initial address"
+            self.log.info(f"{service_name}'s initial subset does not have an initial address")
+            return None
         return str(initial_address.ip)
 
     def create_bitcoind_service(self, tank) -> client.V1Service:
