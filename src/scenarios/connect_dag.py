@@ -2,7 +2,6 @@
 
 from time import sleep
 
-from scenarios.utils import  ensure_miner, get_service_ip
 from warnet.test_framework_bridge import WarnetTestFramework
 
 
