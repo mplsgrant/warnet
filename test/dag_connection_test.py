@@ -17,7 +17,7 @@ if base.backend == "k8s":
     base.wait_for_all_edges()
 
     # Start scenario
-    base.warcli(f"scenarios run get_service_ip --network_name={base.network_name}")
+    base.warcli(f"scenarios run connect_dag --network_name={base.network_name}")
 
     counter = 0
     while (len(base.rpc("scenarios_list_running")) == 1

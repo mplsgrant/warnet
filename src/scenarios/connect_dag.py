@@ -109,5 +109,6 @@ class ConnectDag(WarnetTestFramework):
 
         self.log.info("Successfully ran the complete_dag_connection scenario.")
 
+
 if __name__ == "__main__":
     ConnectDag().main()
