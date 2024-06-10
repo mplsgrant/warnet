@@ -176,9 +176,6 @@ done
 print_message "" "🥳" ""
 print_message "" "Run the following command to enter into the python virtual environment..." ""
 print_message "" "    source .venv/bin/activate" "$BOLD"
-<<<<<<< HEAD
-print_partial_message "   After that, you can run " "warcli help" " to start running Warnet commands." "$BOLD"
-=======
 print_partial_message "   After that, you can run " "warcli --help" " to explore Warnet commands." "$BOLD"
 print_partial_message "" "" "" ""
 print_partial_message "   Consider starting up 'anticycle' with " "warcli scenarios run anticycle" "." "$BOLD"
@@ -189,5 +186,3 @@ print_partial_message "   To stop a scenario run " "warcli scenarios stop <pid f
 print_partial_message "   To quit run " "just stop" "." "$BOLD"
 print_partial_message "" "" "" ""
 print_partial_message "   To start over just run " "./quick_start.sh" " again." "$BOLD"
-
->>>>>>> 2bd8b83 (improve instructions)
