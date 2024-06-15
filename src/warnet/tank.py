@@ -4,6 +4,7 @@ Tanks are containerized bitcoind nodes
 
 import logging
 
+from warnet.lnnode import LNNode
 from warnet.services import ServiceType
 from warnet.utils import (
     SUPPORTED_TAGS,
@@ -39,7 +40,6 @@ class Tank:
     DEFAULT_BUILD_ARGS = "--disable-tests --with-incompatible-bdb --without-gui --disable-bench --disable-fuzz-binary --enable-suppress-external-warnings --enable-debug "
 
     def __init__(self, index: int, warnet):
-        from warnet.lnnode import LNNode
         self.index = index
         self.warnet = warnet
         self.network_name = warnet.network_name
@@ -96,7 +96,6 @@ class Tank:
                 "cb_image": node.get("ln_cb_image", None),
                 "ln_config": node.get("ln_config", ""),
             }
-            from warnet.lnnode import LNNode
             self.lnnode = LNNode(self.warnet, self, self.warnet.container_interface, options)
 
         logger.debug(
