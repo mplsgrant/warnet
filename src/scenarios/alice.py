@@ -219,7 +219,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
     def test_replacement_cycling(self):
         alice = self.nodes[0]
         alice_seckey = ECKey()
-        alice_seckey.set(b'11111111111111111111111111111111', True)
+        alice_seckey.set((1).to_bytes(32, "big"), True)
 
         bob = self.nodes[1]
         carol = self.nodes[2]
