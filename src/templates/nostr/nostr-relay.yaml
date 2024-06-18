@@ -1,0 +1,76 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nostr-pv
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /mnt/src/nostr_relay/
+    type: Directory
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nostr-db-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nostr-rs-relay-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nostr-rs-relay
+  template:
+    metadata:
+      labels:
+        app: nostr-rs-relay
+    spec:
+      containers:
+        - name: nostr-rs-relay
+          image: scsibug/nostr-rs-relay
+          ports:
+            - containerPort: 7000
+              name: nostr-port
+          volumeMounts:
+            - name: nostr-config-file
+              mountPath: /usr/src/app/config.toml
+              subPath: config.toml
+            - name: nostr-db
+              mountPath: /usr/src/app/db/
+      volumes:
+        - name: nostr-config-file
+          configMap:
+            name: nostr-relay-config # kubectl create configmap nostr-relay-config --from-file=config.toml
+            items:
+              - key: config.toml
+                path: config.toml
+        - name: nostr-db
+          persistentVolumeClaim:
+            claimName: nostr-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nostr-service
+spec:
+  selector:
+    app: nostr-rs-relay-app
+  ports:
+    - protocol: TCP
+      port: 7000
+      targetPort: 7000
