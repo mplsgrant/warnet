@@ -28,6 +28,10 @@ start:
     kubectl apply -f src/templates/rpc/warnet-rpc-statefulset-dev.yaml
     kubectl config set-context --current --namespace=warnet
 
+    # Setup nostr
+    kubectl create configmap nostr-relay-config --from-file=src/templates/nostr/config.toml
+    kubectl apply -f src/templates/nostr/nostr-relay.yaml
+
     until kubectl get pod rpc-0 --namespace=warnet; do
        echo "Waiting for server to find pod rpc-0..."
        sleep 4
