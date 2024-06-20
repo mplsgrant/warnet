@@ -7,7 +7,7 @@ jsonrpcserver
 jsonrpcclient
 kubernetes
 networkx
-nostr-sdk
+nostr
 numpy
 requests<2.30
 rich

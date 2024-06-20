@@ -12,12 +12,19 @@ certifi==2023.11.17
     # via
     #   kubernetes
     #   requests
+cffi==1.16.0
+    # via
+    #   cryptography
+    #   nostr
+    #   secp256k1
 charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via
     #   -r requirements.in
     #   flask
+cryptography==41.0.7
+    # via nostr
 docker==7.0.0
     # via -r requirements.in
 flask==3.0.0
@@ -56,7 +63,7 @@ mdurl==0.1.2
     # via markdown-it-py
 networkx==3.2.1
     # via -r requirements.in
-nostr-sdk==0.6.0
+nostr==0.0.2
     # via -r requirements.in
 numpy==1.26.2
     # via -r requirements.in
@@ -74,6 +81,10 @@ pyasn1==0.5.1
     #   rsa
 pyasn1-modules==0.3.0
     # via google-auth
+pycparser==2.21
+    # via
+    #   cffi
+    #   nostr
 pygments==2.17.2
     # via rich
 python-dateutil==2.8.2
@@ -104,6 +115,8 @@ rpds-py==0.16.2
     #   referencing
 rsa==4.9
     # via google-auth
+secp256k1==0.14.0
+    # via nostr
 six==1.16.0
     # via
     #   kubernetes
@@ -120,6 +133,8 @@ urllib3==1.26.18
     #   kubernetes
     #   requests
 websocket-client==1.7.0
-    # via kubernetes
+    # via
+    #   kubernetes
+    #   nostr
 werkzeug==3.0.1
     # via flask
