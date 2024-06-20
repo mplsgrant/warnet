@@ -235,7 +235,7 @@ class ReplacementCyclingTest(WarnetTestFramework):
         client.add_relay("wss://service/nostr-service")
         client.connect()
         event = EventBuilder.new_text_note("Test note from scratch.py", [])
-        client.send_event(event)
+        await client.send_event(event)
 
 
 
