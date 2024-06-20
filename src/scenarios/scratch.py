@@ -8,11 +8,7 @@
 
 """Test replacement cycling attacks against Lightning channels"""
 
-import asyncio
-from datetime import timedelta
-from nostr_sdk import (Keys, Client,  EventBuilder, Filter, Metadata,
-                       init_logger, LogLevel)
-import time
+
 
 from test_framework.key import (
     ECKey
@@ -226,18 +222,6 @@ class ReplacementCyclingTest(WarnetTestFramework):
         alice = self.nodes[0]
         alice_seckey = ECKey()
         alice_seckey.set((1).to_bytes(32, "big"), True)
-
-        asyncio.run(self.query_nostr())
-
-    async def query_nostr(self):
-        keys = Keys.generate()
-        client = Client(keys)
-        client.add_relay("wss://service/nostr-service")
-        client.connect()
-        event = EventBuilder.new_text_note("Test note from scratch.py", [])
-        await client.send_event(event)
-
-
 
 
     def run_test(self):
