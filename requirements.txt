@@ -56,6 +56,8 @@ mdurl==0.1.2
     # via markdown-it-py
 networkx==3.2.1
     # via -r requirements.in
+nostr-sdk==0.6.0
+    # via -r requirements.in
 numpy==1.26.2
     # via -r requirements.in
 oauthlib==3.2.2
