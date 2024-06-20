@@ -11,6 +11,8 @@ nostr
 numpy
 requests<2.30
 rich
+setuptools
 tabulate
+wheel
 PyYAML
 pyzmq

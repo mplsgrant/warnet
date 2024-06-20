@@ -117,6 +117,8 @@ rsa==4.9
     # via google-auth
 secp256k1==0.14.0
     # via nostr
+setuptools==69.0.3
+    # via -r requirements.in
 six==1.16.0
     # via
     #   kubernetes
@@ -138,3 +140,5 @@ websocket-client==1.7.0
     #   nostr
 werkzeug==3.0.1
     # via flask
+wheel==0.42.0
+    # via -r requirements.in
