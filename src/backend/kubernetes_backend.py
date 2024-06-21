@@ -21,6 +21,8 @@ from warnet.status import RunningStatus
 from warnet.tank import Tank
 from warnet.utils import parse_raw_messages
 
+import glob
+
 DOCKER_REGISTRY_CORE = "bitcoindevproject/bitcoin"
 LOCAL_REGISTRY = "warnet/bitcoin-core"
 
@@ -41,6 +43,7 @@ class KubernetesBackend:
         # assumes the warnet rpc server is always
         # running inside a k8s cluster as a statefulset
         print(f"KubernetesBackend: config_dir {config_dir}")
+        print(f"config_dir contents: {config_dir.glob('*')}")
         config.load_incluster_config()
         self.client = client.CoreV1Api()
         self.dynamic_client = DynamicClient(client.ApiClient())
