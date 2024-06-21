@@ -486,6 +486,7 @@ class Server:
         """
         Run a warnet with topology loaded from a <graph_file>
         """
+        self.logger.info("At from_network_file")
 
         def thread_start(server: Server, network):
             with server.image_build_lock:
