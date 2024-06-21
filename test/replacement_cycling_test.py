@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from test_base import TestBase
 
-graph_file_path = Path(os.path.dirname(__file__)) / "data" / "default.graphml"
+graph_file_path = Path(os.path.dirname(__file__)) / "data" / "12_node_ring.graphml"
 
 base = TestBase()
 
