@@ -43,7 +43,7 @@ class KubernetesBackend:
         # assumes the warnet rpc server is always
         # running inside a k8s cluster as a statefulset
         print(f"KubernetesBackend: config_dir {config_dir}")
-        print(f"config_dir contents: {config_dir.glob('*')}")
+        print(f"config_dir contents: {list(config_dir.iterdir())}")
         config.load_incluster_config()
         self.client = client.CoreV1Api()
         self.dynamic_client = DynamicClient(client.ApiClient())
