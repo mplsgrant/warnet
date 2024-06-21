@@ -40,6 +40,7 @@ class KubernetesBackend:
     def __init__(self, config_dir: Path, network_name: str, logs_pod="fluentd") -> None:
         # assumes the warnet rpc server is always
         # running inside a k8s cluster as a statefulset
+        print(f"KubernetesBackend: config_dir {config_dir}")
         config.load_incluster_config()
         self.client = client.CoreV1Api()
         self.dynamic_client = DynamicClient(client.ApiClient())
