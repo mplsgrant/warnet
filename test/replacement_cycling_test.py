@@ -72,7 +72,11 @@ base.wait_for_all_edges()
 
 out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
 print(f"Out: {out}")
-base.get_tank(0)
+
+base.wait_for_all_scenarios()
+with open(base.tmpdir / "tmp.log") as f:
+    print(f"LINES: f.readlines()")
+
 print(f"Finished: {os.path.basename(__file__)}")
 
 base.stop_server()
