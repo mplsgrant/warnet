@@ -16,10 +16,10 @@ base.wait_for_all_edges()
 # Start scenario
 out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
 
-log = base.get_tank(0).warnet.container_interface.log
+log_path = base.logfilepath
 
-print("out: {out}")
-print("log: {log}")
+print(f"out: {out}")
+print(f"log: {log_path}")
 
 def check_success():
     False
