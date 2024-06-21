@@ -68,8 +68,9 @@ base.wait_for_all_edges()
 # Start scenario
 out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
 
-debug_log_path = base.logfilepath
+assert_debug_log(base.logfilepath, "Finished: replacement_cycling.py", None)
 
-assert_debug_log(debug_log_path, "Finished: replacement_cycling.py", None)
+with open(base.logfilepath) as logfile:
+    print(logfile.read())
 
 base.stop_server()
