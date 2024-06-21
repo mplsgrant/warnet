@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-import time
 from pathlib import Path
-
 from test_base import TestBase
 
 graph_file_path = Path(os.path.dirname(__file__)) / "data" / "default.graphml"
@@ -16,7 +14,12 @@ base.wait_for_all_tanks_status(target="running")
 base.wait_for_all_edges()
 
 # Start scenario
-base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
+out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
+
+log = base.get_tank().warnet.container_interface.log
+
+print("out: {out}")
+print("log: {log}")
 
 def check_success():
     False
