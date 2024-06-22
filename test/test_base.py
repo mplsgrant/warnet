@@ -92,12 +92,12 @@ class TestBase:
             if path.exists():
                 with open(path, 'a') as file:
                     print(f"{line}")
-                    file.write(line + '\n')
+                    file.write(line)
             else:
                 with open(path, 'w') as file:
                     print("Creating: ", path)
                     print(f"{line}")
-                    file.write(line + '\n')
+                    file.write(line)
 
         # For kubernetes we assume the server is started outside test base
         # but we can still read its log output

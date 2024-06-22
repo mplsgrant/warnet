@@ -72,7 +72,6 @@ def success_exists(test_base: TestBase, log_string):
         if path.exists():
             with open(path, 'r') as file:
                 for line in file:
-                    print(line)
                     if log_string in line:
                         found = True
                         break
