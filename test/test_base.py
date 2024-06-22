@@ -1,5 +1,6 @@
 import atexit
 import os
+import socket
 import threading
 from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen, run
@@ -29,6 +30,8 @@ class TestBase:
 
         atexit.register(self.cleanup)
 
+        hostname = socket.gethostname()
+        print("\nMachine name:", hostname)
         print("\nWarnet test base started")
 
     def cleanup(self, signum=None, frame=None):
