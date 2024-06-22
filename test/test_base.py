@@ -88,7 +88,7 @@ class TestBase:
             path = self.tmpdir / "tmp.log"
             if path.exists():
                 with open(path, 'a') as file:
-                    print(line)
+print(f"PRINT: {line}")
                     file.write(line + '\n')
 
         # For kubernetes we assume the server is started outside test base
