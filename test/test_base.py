@@ -85,9 +85,11 @@ class TestBase:
         #       maybe also ensure that no conflicting docker networks exist
 
         def write_and_print(line):
-            with open(self.tmpdir / "tmp.log") as file:
-                print(line)
-                file.write(line)
+            path = self.tmpdir / "tmp.log"
+            if path.exists():
+                with open(path) as file:
+                    print(line)
+                    file.write(line)
 
         # For kubernetes we assume the server is started outside test base
         # but we can still read its log output
