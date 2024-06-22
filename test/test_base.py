@@ -93,6 +93,11 @@ class TestBase:
                 with open(path, 'a') as file:
                     print(f"PRINT: {line}")
                     file.write(line + '\n')
+            else:
+                with open(path, 'w') as file:
+                    print("Creating: ", path)
+                    print(f"PRINT: {line}")
+                    file.write(line + '\n')
 
         # For kubernetes we assume the server is started outside test base
         # but we can still read its log output
@@ -106,7 +111,7 @@ class TestBase:
 
         # Create a thread to read the output
         self.server_thread = threading.Thread(
-            target=self.output_reader, args=(self.server.stdout, print)
+            target=self.output_reader, args=(self.server.stdout, write_and_print)
         )
         self.server_thread.daemon = True
         self.server_thread.start()
