@@ -94,8 +94,6 @@ base.wait_for_all_edges()
 out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
 print(f"Out: {out}")
 
-time.sleep(30)
-
 print("About to wait for log to exist")
 base.wait_for_predicate(log_exists(base))
 print("log exists")
