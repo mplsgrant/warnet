@@ -58,11 +58,6 @@ def assert_debug_log(debug_log_path, expected_msgs, unexpected_msgs=None, timeou
         '\n\n{}\n\n'.format(str(expected_msgs), print_log))
 
 
-# def assert_finished():
-#     with assert_debug_log(base.logfilepath, ["Finished: replacement_cycling.py"]):
-#         out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
-#         print(f"out: {out}")
-
 def log_exists(test_base: TestBase):
     def f():
         path = test_base.tmpdir / "tmp.log"
@@ -77,6 +72,7 @@ def success_exists(test_base: TestBase, log_string):
         if path.exists():
             with open(path, 'r') as file:
                 for line in file:
+                    print(line)
                     if log_string in line:
                         found = True
                         break
@@ -94,11 +90,7 @@ base.wait_for_all_edges()
 out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
 print(f"Out: {out}")
 
-print("About to wait for log to exist")
 base.wait_for_predicate(log_exists(base))
-print("log exists")
-
-print("about to wait for Finished.")
 base.wait_for_predicate(success_exists(base, "Finished: replacement_cycling.py"))
 print(f"Finished: {os.path.basename(__file__)}")
 
