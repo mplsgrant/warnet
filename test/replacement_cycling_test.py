@@ -54,9 +54,28 @@ def assert_debug_log(debug_log_path, expected_msgs, unexpected_msgs=None, timeou
             break
         time.sleep(0.05)
     raise AssertionError(
-        'Expected messages "{}" does not partially match log:\n\n{}\n\n'.format(str(expected_msgs),
-                                                                                print_log))
+        'Expected messages "{}" does not partially match log:'
+        '\n\n{}\n\n'.format(str(expected_msgs), print_log))
 
+
+# def assert_finished():
+#     with assert_debug_log(base.logfilepath, ["Finished: replacement_cycling.py"]):
+#         out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
+#         print(f"out: {out}")
+
+def log_exists(base):
+    path = base.tmpdir / "tmp.log"
+    return path.exists()
+
+
+def success_exists(base, log_string):
+    path = base.tmpdir / "tmp.log"
+    with open(path, 'r') as file:
+        found = False
+        for line in file:
+            if log_string in line:
+                found = True
+                break
 
 base = TestBase()
 
@@ -65,17 +84,15 @@ print(base.warcli(f"network start {graph_file_path}"))
 base.wait_for_all_tanks_status(target="running")
 base.wait_for_all_edges()
 
-# Start scenario
-#with assert_debug_log(base.logfilepath, ["Finished: replacement_cycling.py"]):
-#    out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
-#    print(f"out: {out}")
 
 out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
 print(f"Out: {out}")
 
-base.wait_for_all_scenarios()
-with open(base.tmpdir / "tmp.log") as f:
-    print(f"LINES: f.readlines()")
+print("About to wait for log to exist")
+base.wait_for_predicate(log_exists(base))
+print("log exists")
+print("about to wait for Finished.")
+base.wait_for_predicate(success_exists(base, "Finished: replacement_cycling.py"))
 
 print(f"Finished: {os.path.basename(__file__)}")
 
