@@ -106,7 +106,7 @@ class TestBase:
 
         # Create a thread to read the output
         self.server_thread = threading.Thread(
-            target=self.output_reader, args=(self.server.stdout, write_and_print)
+            target=self.output_reader, args=(self.server.stdout, print)
         )
         self.server_thread.daemon = True
         self.server_thread.start()
