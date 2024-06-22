@@ -63,19 +63,20 @@ def assert_debug_log(debug_log_path, expected_msgs, unexpected_msgs=None, timeou
 #         out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
 #         print(f"out: {out}")
 
-def log_exists(base):
-    path = base.tmpdir / "tmp.log"
+def log_exists(test_base):
+    path = test_base.tmpdir / "tmp.log"
     return path.exists()
 
 
-def success_exists(base, log_string):
-    path = base.tmpdir / "tmp.log"
+def success_exists(test_base, log_string):
+    path = test_base.tmpdir / "tmp.log"
     with open(path, 'r') as file:
         found = False
         for line in file:
             if log_string in line:
                 found = True
                 break
+
 
 base = TestBase()
 
