@@ -71,12 +71,22 @@ def success_exists(test_base: TestBase, log_string):
         found = False
         if path.exists():
             with open(path, 'r') as file:
+                print(get_last_line(path))
                 for line in file:
                     if log_string in line:
                         found = True
                         break
         return found
     return f
+
+
+def get_last_line(file_path):
+    with open(file_path, 'rb') as f:
+        f.seek(-2, 2)  # Jump to the second last byte.
+        while f.read(1) != b'\n':  # Until EOL is found.
+            f.seek(-2, 1)  # Jump back the read byte plus one more.
+        return f.readline().decode()  # Read the last line.
+
 
 
 base = TestBase()
