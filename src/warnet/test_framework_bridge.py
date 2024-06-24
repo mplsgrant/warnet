@@ -338,6 +338,7 @@ class WarnetTestFramework(BitcoinTestFramework):
                 ip_addr = str(ipaddress.ip_address(peer['addr'].split(':')[0]))
                 return ip_addr
             except ValueError:  # or we encounter a service name
+                print("SERVICE_NAME: {}".format(peer['addr']))
                 service_name_parts = peer['addr'].split('-')
 
                 if len(service_name_parts) == 4:
