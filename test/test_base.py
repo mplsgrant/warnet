@@ -23,6 +23,7 @@ class TestBase:
         self.log.info("Warnet test base initialized")
 
     def setup_environment(self):
+        self.pod_name = "rpc-0"
         self.tmpdir = Path(mkdtemp(prefix="warnet-test-"))
         os.environ["XDG_STATE_HOME"] = str(self.tmpdir)
         self.logfilepath = self.tmpdir / "warnet.log"
@@ -41,6 +42,9 @@ class TestBase:
         logging.config.dictConfig(logging_config)
         self.log = logging.getLogger("test")
         self.log.info("Logging started")
+
+    def passthrough_logger(self, message):
+        self.logger.info(f"{self.pod_name} - {message}")
 
     def cleanup(self, signum=None, frame=None):
         if self.server is None:
@@ -98,7 +102,7 @@ class TestBase:
         # but we can still read its log output
         self.log.info("Starting Warnet server")
         self.server = Popen(
-            ["kubectl", "logs", "-f", "rpc-0"],
+            ["kubectl", "logs", "-f", self.pod_name, "--since=1s"],
             stdout=PIPE,
             stderr=STDOUT,
             bufsize=1,
@@ -106,7 +110,7 @@ class TestBase:
         )
 
         self.server_thread = threading.Thread(
-            target=self.output_reader, args=(self.server.stdout, print)
+            target=self.output_reader, args=(self.server.stdout, self.passthrough_logger)
         )
         self.server_thread.daemon = True
         self.server_thread.start()
