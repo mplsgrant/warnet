@@ -131,6 +131,7 @@ class Warnet:
     @classmethod
     def from_network(cls, network_name):
         config_dir = gen_config_dir(network_name)
+        print(f"CONFIG_DIR: {config_dir}")
         self = cls(config_dir, network_name)
         self.network_name = network_name
         # Get network graph edges from graph file (required for network restarts)
