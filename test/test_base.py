@@ -99,7 +99,7 @@ class TestBase:
         # For kubernetes we assume the server is started outside test base
         # but we can still read its log output
         self.server = Popen(
-            ["kubectl", "logs", "-f", "rpc-0"],
+            ["kubectl", "logs", "-f", "rpc-0", "--since=1s"],
             stdout=PIPE,
             stderr=STDOUT,
             bufsize=1,
