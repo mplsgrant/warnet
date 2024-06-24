@@ -86,8 +86,6 @@ def success_exists(test_base: TestBase, log_string):
 #             f.seek(-2, 1)  # Jump back the read byte plus one more.
 #         return f.readline().decode()  # Read the last line.
 
-
-
 base = TestBase()
 
 base.start_server()
