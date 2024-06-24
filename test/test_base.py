@@ -84,6 +84,18 @@ class TestBase:
         # TODO: check for conflicting warnet process
         #       maybe also ensure that no conflicting docker networks exist
 
+        def write_and_print(line):
+            path = self.tmpdir / "tmp.log"
+            if path.exists():
+                with open(path, 'a') as file:
+                    print(f"{line}")
+                    file.write(line)
+            else:
+                with open(path, 'w') as file:
+                    print("Creating: ", path)
+                    print(f"{line}")
+                    file.write(line)
+
         # For kubernetes we assume the server is started outside test base
         # but we can still read its log output
         self.server = Popen(
@@ -96,7 +108,7 @@ class TestBase:
 
         # Create a thread to read the output
         self.server_thread = threading.Thread(
-            target=self.output_reader, args=(self.server.stdout, print)
+            target=self.output_reader, args=(self.server.stdout, write_and_print)
         )
         self.server_thread.daemon = True
         self.server_thread.start()
