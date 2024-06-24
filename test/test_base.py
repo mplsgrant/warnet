@@ -105,6 +105,7 @@ class TestBase:
             universal_newlines=True,
         )
 
+        print("TMP_DIR: {}".format(self.tmpdir))
         # Create a thread to read the output
         self.server_thread = threading.Thread(
             target=self.output_reader, args=(self.server.stdout, write_and_print)

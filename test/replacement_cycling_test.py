@@ -79,13 +79,6 @@ def success_exists(test_base: TestBase, log_string):
     return f
 
 
-# def get_last_line(file_path):
-#     with open(file_path, 'rb') as f:
-#         f.seek(-2, os.SEEK_END)
-#         while f.read(1) != b'\n':  # Until EOL is found.
-#             f.seek(-2, 1)  # Jump back the read byte plus one more.
-#         return f.readline().decode()  # Read the last line.
-
 base = TestBase()
 
 base.start_server()
