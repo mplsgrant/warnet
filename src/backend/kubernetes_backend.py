@@ -13,7 +13,6 @@ from kubernetes.client.exceptions import ApiValueError
 from kubernetes.client.models.v1_pod import V1Pod
 from kubernetes.client.models.v1_service import V1Service
 from kubernetes.client.rest import ApiException
-from kubernetes.config.config_exception import ConfigException
 from kubernetes.dynamic import DynamicClient
 from kubernetes.dynamic.exceptions import NotFoundError, ResourceNotFoundError
 from kubernetes.stream import stream
@@ -21,8 +20,6 @@ from warnet.services import ServiceType, services
 from warnet.status import RunningStatus
 from warnet.tank import Tank
 from warnet.utils import parse_raw_messages
-
-import glob
 
 DOCKER_REGISTRY_CORE = "bitcoindevproject/bitcoin"
 LOCAL_REGISTRY = "warnet/bitcoin-core"
@@ -43,12 +40,7 @@ class KubernetesBackend:
     def __init__(self, config_dir: Path, network_name: str, logs_pod="fluentd") -> None:
         # assumes the warnet rpc server is always
         # running inside a k8s cluster as a statefulset
-        try:
-            config.load_incluster_config()
-            print("Loaded in-cluster config")
-        except ConfigException:
-            config.load_kube_config()
-            print("Loaded kubeconfig from default location")
+        config.load_incluster_config()
         self.client = client.CoreV1Api()
         self.dynamic_client = DynamicClient(client.ApiClient())
         self.namespace = "warnet"

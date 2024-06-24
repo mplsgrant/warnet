@@ -1,6 +1,5 @@
 import atexit
 import os
-import socket
 import threading
 from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen, run
@@ -30,8 +29,6 @@ class TestBase:
 
         atexit.register(self.cleanup)
 
-        hostname = socket.gethostname()
-        print("\nMachine name:", hostname)
         print("\nWarnet test base started")
 
     def cleanup(self, signum=None, frame=None):
@@ -61,7 +58,6 @@ class TestBase:
 
         if proc.stderr:
             raise Exception(proc.stderr.decode().strip())
-        # return proc.stdout.decode().strip()
 
     # Execute a warnet RPC API call directly (may return dict or list)
     def rpc(self, method, params=None):
