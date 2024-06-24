@@ -1,4 +1,7 @@
 import atexit
+import json
+import logging
+import logging.config
 import os
 import threading
 from pathlib import Path
@@ -7,16 +10,27 @@ from tempfile import mkdtemp
 from time import sleep
 
 from cli.rpc import rpc_call
+from warnet.server import LOGGING_CONFIG_PATH
 from warnet.utils import exponential_backoff
 from warnet.warnet import Warnet
 
 
 class TestBase:
     def __init__(self):
+        self.pod_name = "rpc-0"
+
         # Warnet server stdout gets logged here
         self.tmpdir = Path(mkdtemp(prefix="warnet-test-"))
         os.environ["XDG_STATE_HOME"] = f"{self.tmpdir}"
         self.logfilepath = self.tmpdir / "warnet" / "warnet.log"
+        self.testlog = self.tmpdir / "testbase.log"
+
+        with open(LOGGING_CONFIG_PATH) as f:
+            logging_config = json.load(f)
+
+        logging_config["handlers"]["file"]["filename"] = str(self.testlog)
+        logging.config.dictConfig(logging_config)
+        self.logger = logging.getLogger("testbase")
 
         # Use the same dir name for the warnet network name
         # replacing underscores which throws off k8s
@@ -30,6 +44,9 @@ class TestBase:
         atexit.register(self.cleanup)
 
         print("\nWarnet test base started")
+
+    def passthrough_logger(self, message):
+        self.logger.info(f"{self.pod_name} - {message}")
 
     def cleanup(self, signum=None, frame=None):
         if self.server is None:
@@ -87,7 +104,7 @@ class TestBase:
         # For kubernetes we assume the server is started outside test base
         # but we can still read its log output
         self.server = Popen(
-            ["kubectl", "logs", "-f", "rpc-0"],
+            ["kubectl", "logs", "-f", self.pod_name, "--since=1s"],
             stdout=PIPE,
             stderr=STDOUT,
             bufsize=1,
@@ -96,7 +113,7 @@ class TestBase:
 
         # Create a thread to read the output
         self.server_thread = threading.Thread(
-            target=self.output_reader, args=(self.server.stdout, print)
+            target=self.output_reader, args=(self.server.stdout, self.passthrough_logger)
         )
         self.server_thread.daemon = True
         self.server_thread.start()
