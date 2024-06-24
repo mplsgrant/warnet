@@ -93,7 +93,7 @@ print(base.warcli(f"network start {graph_file_path}"))
 base.wait_for_all_tanks_status(target="running")
 base.wait_for_all_edges()
 
-out = base.warcli(f"scenarios run replacement_cycling --network_name={base.network_name}")
+out = base.warcli(f"scenarios run replacement_cycling")
 print(f"Out: {out}")
 
 base.wait_for_predicate(log_exists(base))
