@@ -87,7 +87,7 @@ class TestBase:
             path = self.tmpdir / "tmp.log"
             if path.exists():
                 with open(path, 'a') as file:
-                    print(f"{path} - {line}")
+                    print(f"{line}")
                     file.write(line)
             else:
                 with open(path, 'w') as file:
@@ -98,7 +98,7 @@ class TestBase:
         # For kubernetes we assume the server is started outside test base
         # but we can still read its log output
         self.server = Popen(
-            ["kubectl", "logs", "-f", "rpc-0"],
+            ["kubectl", "logs", "-f", "rpc-0", "--since=1s"],
             stdout=PIPE,
             stderr=STDOUT,
             bufsize=1,
