@@ -49,7 +49,6 @@ class KubernetesBackend:
         except ConfigException:
             config.load_kube_config()
             print("Loaded kubeconfig from default location")
-        config.load_incluster_config()
         self.client = client.CoreV1Api()
         self.dynamic_client = DynamicClient(client.ApiClient())
         self.namespace = "warnet"
