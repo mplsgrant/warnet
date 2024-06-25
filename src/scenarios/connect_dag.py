@@ -26,7 +26,7 @@ class ConnectDag(WarnetTestFramework):
     def run_test(self):
         while not self.warnet.network_connected():
             sleep(1)
-
+        assert False
         # All permutations of a directed acyclic graph with zero, one, or two inputs/outputs
         #
         # │ Node │ In │ Out │ Con In │ Con Out │
