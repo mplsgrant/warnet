@@ -1,6 +1,9 @@
 import atexit
+import contextlib
 import os
+import re
 import threading
+import time
 from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen, run
 from tempfile import mkdtemp
@@ -178,3 +181,35 @@ class TestBase:
             return all(not scn["active"] for scn in scns)
 
         self.wait_for_predicate(check_scenarios)
+
+
+def assert_equal(thing1, thing2, *args):
+    if thing1 != thing2 or any(thing1 != arg for arg in args):
+        raise AssertionError("not({})".format(" == ".join(str(arg)
+                                                          for arg in (thing1, thing2) + args)))
+
+
+def debug_log_size(debug_log_path, **kwargs) -> int:
+    with open(debug_log_path, **kwargs) as dl:
+        dl.seek(0, 2)
+        return dl.tell()
+
+
+def assert_log(debug_log_path, expected_msgs, unexpected_msgs=None):
+    if unexpected_msgs is None:
+        unexpected_msgs = []
+    assert_equal(type(expected_msgs), list)
+    assert_equal(type(unexpected_msgs), list)
+
+    found = True
+    with open(debug_log_path, encoding="utf-8", errors="replace") as dl:
+        log = dl.read()
+    print_log = " - " + "\n - ".join(log.splitlines())
+    for unexpected_msg in unexpected_msgs:
+        if re.search(re.escape(unexpected_msg), log, flags=re.MULTILINE):
+            raise AssertionError(
+                f'Unexpected message found in log: {unexpected_msg}')
+    for expected_msg in expected_msgs:
+        if re.search(re.escape(expected_msg), log, flags=re.MULTILINE) is None:
+            found = False
+    return found
