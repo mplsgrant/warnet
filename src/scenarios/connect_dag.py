@@ -116,8 +116,10 @@ class ConnectDag(WarnetTestFramework):
         self.log.info(f"Successfully ran the {os.path.basename(__file__)} scenario.")
 
     def assert_connection(self, connector, connectee_index, connection_type: ConnectionType):
+        for d in connector:
+            print(f"{connection_type} {d}")
         if connection_type == ConnectionType.DNS:
-            assert any(d.get("addr").split(":")[0] ==
+            assert any(d.get("addr") ==
                        self.warnet.tanks[connectee_index].get_dns_addr() for d in connector), \
                 (f"Could not find {self.options.network_name}-"
                  f"tank-00000{connectee_index}-service")
