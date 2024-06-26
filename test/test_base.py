@@ -1,9 +1,7 @@
 import atexit
-import contextlib
 import os
 import re
 import threading
-import time
 from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen, run
 from tempfile import mkdtemp
@@ -91,12 +89,12 @@ class TestBase:
             path = self.tmpdir / "tmp.log"
             if path.exists():
                 with open(path, 'a') as file:
-                    print(f"{line}")
+                    print(f"{line} + '\n'")
                     file.write(line)
             else:
                 with open(path, 'w') as file:
                     print("Creating: ", path)
-                    print(f"{line}")
+                    print(f"{line} + '\n'")
                     file.write(line)
 
         # For kubernetes we assume the server is started outside test base
@@ -195,7 +193,7 @@ def debug_log_size(debug_log_path, **kwargs) -> int:
         return dl.tell()
 
 
-def assert_log(debug_log_path, expected_msgs, unexpected_msgs=None):
+def assert_log(debug_log_path, expected_msgs, unexpected_msgs=None) -> bool:
     if unexpected_msgs is None:
         unexpected_msgs = []
     assert_equal(type(expected_msgs), list)
@@ -212,8 +210,7 @@ def assert_log(debug_log_path, expected_msgs, unexpected_msgs=None):
     for unexpected_msg in unexpected_msgs:
         if re.search(re.escape(unexpected_msg), log, flags=re.MULTILINE):
             raise AssertionError(
-                'Unexpected message "{}" partially matches log:\n\n{}\n\n'.format(
-                    unexpected_msg, print_log))
+                f'Unexpected message "{unexpected_msg}" partially matches log:\n\n{print_log}\n\n')
     for expected_msg in expected_msgs:
         if re.search(re.escape(expected_msg), log, flags=re.MULTILINE) is None:
             found = False
