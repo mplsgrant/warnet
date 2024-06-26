@@ -124,6 +124,18 @@ class ConnectDag(WarnetTestFramework):
         else:
             raise ValueError("ConnectionType must be of type DNS or IP")
 
+    def assert_connection(self, connector, connectee_index, connection_type: ConnectionType):
+        if connection_type == ConnectionType.DNS:
+            assert any(d.get("addr") ==
+                       self.warnet.tanks[connectee_index].get_dns_addr() for d in connector), \
+                f"Could not find {self.options.network_name}-tank-00000{connectee_index}-service"
+        elif connection_type == ConnectionType.IP:
+            assert any(d.get("addr").split(":")[0] ==
+                       self.warnet.tanks[connectee_index].get_ip_addr() for d in connector), \
+                f"Could not find Tank {connectee_index}'s ip addr"
+        else:
+            raise ValueError("ConnectionType must be of type DNS or IP")
+
 
 if __name__ == "__main__":
     ConnectDag().main()
