@@ -1,9 +1,7 @@
 import atexit
-import contextlib
 import os
 import re
 import threading
-import time
 from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen, run
 from tempfile import mkdtemp
