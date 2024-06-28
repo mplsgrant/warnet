@@ -18,6 +18,7 @@ class TestBase:
         self.tmpdir = Path(mkdtemp(prefix="warnet-test-"))
         os.environ["XDG_STATE_HOME"] = f"{self.tmpdir}"
         self.logfilepath = self.tmpdir / "warnet" / "warnet.log"
+        self.testlog = self.tmpdir / "testbase.log"
 
         # Use the same dir name for the warnet network name
         # replacing underscores which throws off k8s
@@ -86,14 +87,13 @@ class TestBase:
         #       maybe also ensure that no conflicting docker networks exist
 
         def write_and_print(line):
-            path = self.tmpdir / "tmp.log"
-            if path.exists():
-                with open(path, 'a') as file:
+            if self.testlog.exists():
+                with open(self.testlog, 'a') as file:
                     print(line)
                     file.write(f"{line}\n")
             else:
-                with open(path, 'w') as file:
-                    print("Creating: ", path)
+                with open(self.testlog, 'w') as file:
+                    print("Creating: ", self.testlog)
                     print(line)
                     file.write(f"{line}\n")
 
