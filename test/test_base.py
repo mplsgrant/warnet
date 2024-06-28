@@ -17,7 +17,6 @@ class TestBase:
         # Warnet server stdout gets logged here
         self.tmpdir = Path(mkdtemp(prefix="warnet-test-"))
         os.environ["XDG_STATE_HOME"] = f"{self.tmpdir}"
-        self.logfilepath = self.tmpdir / "warnet" / "warnet.log"
         self.testlog = self.tmpdir / "testbase.log"
 
         # Use the same dir name for the warnet network name
