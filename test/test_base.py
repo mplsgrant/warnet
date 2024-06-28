@@ -193,7 +193,7 @@ def debug_log_size(debug_log_path, **kwargs) -> int:
         return dl.tell()
 
 
-def assert_log(debug_log_path, expected_msgs, unexpected_msgs=None):
+def assert_log(debug_log_path, expected_msgs, unexpected_msgs=None) -> bool:
     if unexpected_msgs is None:
         unexpected_msgs = []
     assert_equal(type(expected_msgs), list)
