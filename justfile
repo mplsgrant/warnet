@@ -32,7 +32,7 @@ start:
     check_minikube
 
     # Build image in local registry and load into minikube
-    docker build -t warnet/dev -f src/templates/rpc/Dockerfile_rpc_dev . --load
+    docker build --network host -t warnet/dev -f src/templates/rpc/Dockerfile_rpc_dev . --load
     minikube image load warnet/dev
 
     # Setup k8s
