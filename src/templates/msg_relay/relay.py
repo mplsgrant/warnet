@@ -19,7 +19,7 @@ backend.bind("tcp://*:5556")
 # Handle signals
 def signal_handler(sig, _frame):
     """Handle shutdown signal events from the operating system."""
-    logging.info('Interrupt signal received: {} ({})'.format(sig, signal.Signals(sig).name))
+    logging.info(f'Interrupt signal received: {sig} ({signal.Signals(sig).name})')
     logging.info('Stopping')
     shutdown()
     sys.exit(0)
