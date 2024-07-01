@@ -1,8 +1,8 @@
-import zmq
+import logging
 import signal
 import sys
-import logging
 
+import zmq
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - Relay - %(message)s')
 
