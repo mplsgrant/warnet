@@ -19,7 +19,7 @@ base.wait_for_all_edges()
 base.warcli("scenarios run-file test/framework_tests/connect_dag.py")
 
 assert_dag = partial(assert_log, base.testlog,
-                     ["Successfully ran the connect_dag.py scenario."], ["Test failed."])
+                     ["Successfully ran the scenario file"], ["Test failed."])
 
 base.wait_for_predicate(assert_dag)
 
