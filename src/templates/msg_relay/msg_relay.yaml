@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msg-relay-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: msg-relay
+  template:
+    metadata:
+      labels:
+        app: msg-relay
+    spec:
+      containers:
+        - name: msg-relay
+          image: mplsgrant/msg_relay
+          ports:
+            - containerPort: 7000
+              name: msg-relay-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: msg-relay-service
+spec:
+  selector:
+    app: msg-relay-app
+  ports:
+    - protocol: TCP
+      port: 7000
+      targetPort: 7000
