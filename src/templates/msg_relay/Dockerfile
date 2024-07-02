@@ -7,4 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY relay.py .
 
+EXPOSE 5555 5556
+
 CMD ["python", "relay.py"]
