@@ -18,9 +18,9 @@ spec:
           image: mplsgrant/msg_relay
           ports:
             - containerPort: 5555
-              name: msg-relay-back-port
+              name: backend
             - containerPort: 5556
-              name: msg-relay-front-port
+              name: frontend
 ---
 apiVersion: v1
 kind: Service
