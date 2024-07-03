@@ -27,7 +27,7 @@ class Carol(WarnetTestFramework):
 
         context = zmq.Context()
 
-        sender = context.socket(zmq.PUSH)
+        sender = context.socket(zmq.PUB)
         sender.connect("tcp://msg-relay-service:5555")
 
         counter = 0
