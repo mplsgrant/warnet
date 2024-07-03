@@ -11,7 +11,7 @@ def cli_help():
 
 class Carol(WarnetTestFramework):
     def set_test_params(self):
-        self.num_nodes = 3
+        self.num_nodes = 1
 
     def add_options(self, parser):
         parser.add_argument(
