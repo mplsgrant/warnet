@@ -1,6 +1,8 @@
 import atexit
+import logging
 import os
 import re
+import sys
 import threading
 from pathlib import Path
 from subprocess import PIPE, STDOUT, Popen, run
@@ -14,10 +16,29 @@ from warnet.warnet import Warnet
 
 class TestBase:
     def __init__(self):
+        self.pod_name = "rpc-0"
+
         # Warnet server stdout gets logged here
         self.tmpdir = Path(mkdtemp(prefix="warnet-test-"))
         os.environ["XDG_STATE_HOME"] = f"{self.tmpdir}"
         self.testlog = self.tmpdir / "testbase.log"
+
+        self.logger = logging.getLogger(f"{self.pod_name}-logger")
+        self.logger.setLevel(logging.DEBUG)
+
+        file_handler = logging.FileHandler(self.testlog)
+        file_handler.setLevel(logging.DEBUG)
+
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(logging.DEBUG)
+
+        formatter = logging.Formatter(f'{self.pod_name} - %(message)s')
+
+        file_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
 
         # Use the same dir name for the warnet network name
         # replacing underscores which throws off k8s
@@ -85,21 +106,10 @@ class TestBase:
         # TODO: check for conflicting warnet process
         #       maybe also ensure that no conflicting docker networks exist
 
-        def write_and_print(line):
-            if self.testlog.exists():
-                with open(self.testlog, 'a') as file:
-                    print(line)
-                    file.write(f"{line}\n")
-            else:
-                with open(self.testlog, 'w') as file:
-                    print("Creating: ", self.testlog)
-                    print(line)
-                    file.write(f"{line}\n")
-
         # For kubernetes we assume the server is started outside test base
         # but we can still read its log output
         self.server = Popen(
-            ["kubectl", "logs", "-f", "rpc-0", "--since=1s"],
+            ["kubectl", "logs", "-f", self.pod_name, "--since=1s"],
             stdout=PIPE,
             stderr=STDOUT,
             bufsize=1,
@@ -108,7 +118,7 @@ class TestBase:
 
         # Create a thread to read the output
         self.server_thread = threading.Thread(
-            target=self.output_reader, args=(self.server.stdout, write_and_print)
+            target=self.output_reader, args=(self.server.stdout, self.logger.info)
         )
         self.server_thread.daemon = True
         self.server_thread.start()
