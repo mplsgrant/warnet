@@ -357,6 +357,7 @@ class Server:
                     "cmd": f"{scenario_path} {' '.join(additional_args)}",
                     "proc": proc,
                     "network": network,
+                    "logging_thread": t
                 }
             )
 
@@ -402,6 +403,7 @@ class Server:
                     "cmd": f"{scenario} {' '.join(additional_args)}",
                     "proc": proc,
                     "network": network,
+                    "logging_thread": t
                 }
             )
 
@@ -416,6 +418,7 @@ class Server:
         matching_scenarios = [sc for sc in self.running_scenarios if sc["pid"] == pid]
         if matching_scenarios:
             matching_scenarios[0]["proc"].terminate()  # sends SIGTERM
+            matching_scenarios[0]["logging_thread"].join()
             # Remove from running list
             self.running_scenarios = [sc for sc in self.running_scenarios if sc["pid"] != pid]
             return f"Stopped scenario with PID {pid}."
