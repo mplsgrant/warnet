@@ -29,7 +29,7 @@ class Carol(WarnetTestFramework):
 
         while True:
             message = receiver.recv_string()
-            print(f"Alice received message: {message}")
+            self.log.info(f"Alice received message: {message}")
 
 
 if __name__ == "__main__":
