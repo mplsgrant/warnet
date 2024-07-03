@@ -32,9 +32,9 @@ class Carol(WarnetTestFramework):
 
         counter = 0
         while counter < 10:
-            message = f"Carol's message number {counter}"
+            message = f"Carol message number {counter}"
             sender.send_string(message)
-            counter += 0
+            counter += 1
             sleep(1)
 
 
