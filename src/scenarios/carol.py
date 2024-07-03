@@ -22,9 +22,6 @@ class Carol(WarnetTestFramework):
         )
 
     def run_test(self):
-        while not self.warnet.network_connected():
-            sleep(1)
-
         context = zmq.Context()
 
         sender = context.socket(zmq.PUB)
