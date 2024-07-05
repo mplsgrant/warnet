@@ -101,7 +101,7 @@ class TestBase:
         # TODO: check for conflicting warnet process
         #       maybe also ensure that no conflicting docker networks exist
 
-        # For kubernetes we assume the server is started outside test base
+        # For kubernetes we assume the server is started outside test base,
         # but we can still read its log output
         self.server = Popen(
             ["kubectl", "logs", "-f", self.pod_name, "--since=1s"],
