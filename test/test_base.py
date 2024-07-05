@@ -42,7 +42,7 @@ class TestBase:
 
         atexit.register(self.cleanup)
 
-        print("\nWarnet test base started")
+        self.logger.info("Warnet test base started")
 
     def passthrough_logger(self, message):
         self.logger.info(f"{self.pod_name} - {message}")
@@ -52,12 +52,12 @@ class TestBase:
             return
 
         try:
-            print("\nStopping network")
+            self.logger.info("Stopping network")
             if self.network:
                 self.warcli("network down")
                 self.wait_for_all_tanks_status(target="stopped", timeout=60, interval=1)
         except Exception as e:
-            print(f"Error bringing network down: {e}")
+            self.logger.info(f"Error bringing network down: {e}")
         finally:
             self.stop_threads.set()
             self.server.terminate()
@@ -118,7 +118,7 @@ class TestBase:
         self.server_thread.start()
 
         # doesn't require anything container-related
-        print("\nWaiting for RPC")
+        self.logger.info("Waiting for RPC")
         self.wait_for_rpc("scenarios_available")
 
     # Quit
@@ -162,7 +162,7 @@ class TestBase:
                     if circuitbreaker_status not in stats:
                         stats[circuitbreaker_status] = 0
                     stats[circuitbreaker_status] += 1
-            print(f"Waiting for all tanks to reach '{target}': {stats}")
+            self.logger.info(f"Waiting for all tanks to reach '{target}': {stats}")
             # All tanks are running, proceed
             return target in stats and stats[target] == stats["total"]
 
