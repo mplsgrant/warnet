@@ -67,8 +67,8 @@ class TestBase:
             self.server = None
 
     # Execute a warcli RPC using command line (always returns string)
-    def warcli(self, str, network=True):
-        cmd = ["warcli"] + str.split()
+    def warcli(self, command, network=True):
+        cmd = ["warcli"] + command.split()
         if network:
             cmd += ["--network", self.network_name]
         proc = run(cmd, capture_output=True)
