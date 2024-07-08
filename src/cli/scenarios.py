@@ -58,12 +58,16 @@ def run_file(scenario_path, network, additional_args):
     """
     Run <scenario_path> from the Warnet Test Framework on [network] with optional arguments
     """
+    if not scenario_path.endswith(".py"):
+        print("Error. Currently only python scenarios are supported")
+        sys.exit(1)
     scenario_base64 = ""
     with open(scenario_path, "rb") as f:
         scenario_base64 = base64.b64encode(f.read()).decode("utf-8")
 
     params = {
         "scenario_base64": scenario_base64,
+        "scenario_name": scenario_path,
         "additional_args": additional_args,
         "network": network,
     }

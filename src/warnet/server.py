@@ -317,10 +317,21 @@ class Server:
             raise ServerError(message=msg) from e
 
     def scenarios_run_file(
-        self, scenario_base64: str, additional_args: list[str], network: str = "warnet"
+        self,
+        scenario_base64: str,
+        scenario_name: str,
+        additional_args: list[str],
+        network: str = "warnet",
     ) -> str:
         scenario_path = None
-        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_file:
+        # Extract just the filename without path and extension
+        base_name = os.path.splitext(os.path.basename(scenario_name))[0]
+
+        with tempfile.NamedTemporaryFile(
+            prefix=base_name,
+            suffix=".py",
+            delete=False,
+        ) as temp_file:
             scenario_path = temp_file.name
 
             # decode base64 string to binary
@@ -354,7 +365,7 @@ class Server:
             self.running_scenarios.append(
                 {
                     "pid": proc.pid,
-                    "cmd": f"{scenario_path} {' '.join(additional_args)}",
+                    "cmd": f"{base_name}.py {' '.join(additional_args)}",
                     "proc": proc,
                     "network": network,
                 }
