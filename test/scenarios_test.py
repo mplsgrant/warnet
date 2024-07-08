@@ -49,4 +49,22 @@ def check_stop():
 
 base.wait_for_predicate(check_stop)
 
+
+def check_from_file():
+    # Ensure the scenario is still working
+    running = base.rpc("scenarios_list_running")
+    assert len(running) == 1
+    assert running[0]["active"]
+    assert "miner_std.py" in running[0]["cmd"]
+
+    count = int(base.warcli("rpc 0 getblockcount"))
+    print(f"Waiting for 2 blocks: {count}")
+    return count >= 32
+
+
+# Start scenario from file
+print("Checking scenario from file")
+base.warcli("scenarios run-file src/scenarios/miner_std.py --allnodes --interval=1")
+base.wait_for_predicate(check_from_file)
+
 base.stop_server()
