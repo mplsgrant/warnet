@@ -45,7 +45,7 @@ class TestBase:
         self.log.info("Logging started")
 
     def passthrough_logger(self, message):
-        self.logger.info(f"{self.pod_name} - {message}")
+        self.log.info(f"{self.pod_name} - {message}")
 
     def cleanup(self, signum=None, frame=None):
         if self.server is None:
