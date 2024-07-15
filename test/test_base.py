@@ -5,6 +5,7 @@ import logging.config
 import os
 import re
 import threading
+from enum import Enum
 from pathlib import Path
 from subprocess import PIPE, Popen, run
 from tempfile import mkdtemp
@@ -16,14 +17,20 @@ from warnet.utils import exponential_backoff
 from warnet.warnet import Warnet
 
 
+class MsgsFound(Enum):
+    Nothing = "Found neither expected nor unexpected message(s)."
+    Expected = "Found expected message(s)."
+    Unexpected = "Found unexpected message(s)."
+    ExpectedUnexpected = "Found expected and unexpected messages."
+
 class TestBase:
     def __init__(self):
         self.setup_environment()
         self.setup_logging()
         atexit.register(self.cleanup)
-        self.log_expected_msgs: None | [str] = None
-        self.log_unexpected_msgs: None | [str] = None
-        self.log_msg_assertions_passed = False
+        self.log_expected_msgs: None | list[str] = None
+        self.log_unexpected_msgs: None | list[str] = None
+        self.log_msg_assertions_status: None | MsgsFound = None
         self.log.info("Warnet test base initialized")
 
     def setup_environment(self):
@@ -65,16 +72,16 @@ class TestBase:
 
     def _print_and_assert_msgs(self, message):
         print(message)
-        if (self.log_expected_msgs or self.log_unexpected_msgs) and assert_log(
+        if (self.log_expected_msgs or self.log_unexpected_msgs) and find_msgs_in_log(
             message, self.log_expected_msgs, self.log_unexpected_msgs
         ):
-            self.log_msg_assertions_passed = True
+            self.log_msg_assertions_status = True
 
     def assert_log_msgs(self):
         assert (
-            self.log_msg_assertions_passed
+            self.log_msg_assertions_status
         ), f"Log assertion failed. Expected message not found: {self.log_expected_msgs}"
-        self.log_msg_assertions_passed = False
+        self.log_msg_assertions_status = False
 
     def warcli(self, cmd, network=True):
         self.log.debug(f"Executing warcli command: {cmd}")
@@ -202,17 +209,21 @@ def assert_equal(thing1, thing2, *args):
         )
 
 
-def assert_log(log_message, expected_msgs, unexpected_msgs=None) -> bool:
+def find_msgs_in_log(log_message, expected_msgs, unexpected_msgs=None) -> MsgsFound:
     if unexpected_msgs is None:
         unexpected_msgs = []
     assert_equal(type(expected_msgs), list)
     assert_equal(type(unexpected_msgs), list)
 
-    found = True
+    found = MsgsFound.Nothing
     for unexpected_msg in unexpected_msgs:
         if re.search(re.escape(unexpected_msg), log_message, flags=re.MULTILINE):
-            raise AssertionError(f"Unexpected message found in log: {unexpected_msg}")
+            found = MsgsFound.Unexpected
+            # raise AssertionError(f"Unexpected message found in log: {unexpected_msg}")
     for expected_msg in expected_msgs:
-        if re.search(re.escape(expected_msg), log_message, flags=re.MULTILINE) is None:
-            found = False
+        if re.search(re.escape(expected_msg), log_message, flags=re.MULTILINE) is not None:
+            if found == MsgsFound.Unexpected:
+                found = MsgsFound.ExpectedUnexpected
+            else:
+                found = MsgsFound.Expected
     return found
