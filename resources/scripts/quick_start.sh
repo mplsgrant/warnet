@@ -52,8 +52,37 @@ print_message "" "" ""
 print_message "" "    Let's find out if your system has what it takes to run Warnet..." ""
 print_message "" "" ""
 
+docker_path=$(command -v docker || true)
+if [ -n "$docker_path" ]; then
+    print_partial_message " ⭐️ Found " "docker" ": $docker_path" "$BOLD"
+else
+    print_partial_message " 💥 Could not find " "docker" ". Please follow this link to install Docker Engine..." "$BOLD"
+    print_message "" "   https://docs.docker.com/engine/install/" "$BOLD"
+    exit 127
+fi
+
+current_user=$(whoami)
+current_context=$(docker context show)
+if id -nG "$current_user" | grep -qw "docker"; then
+    print_partial_message " ⭐️ Found " "$current_user" " in the docker group" "$BOLD"
+elif [ "$current_context" == "rootless" ]; then
+    print_message " " "⭐️ Running Docker as rootless" "$BOLD"
+else
+    print_partial_message " 💥 Could not find " "$current_user" " in the docker group. Please add it like this..." "$BOLD"
+    print_message "" "   sudo usermod -aG docker $current_user && newgrp docker" "$BOLD"
+    exit 1
+fi
+
 minikube_path=$(command -v minikube || true)
-if [ -n "$minikube_path" ]; then
+if [[ "$(uname)" == "Darwin" ]] && command -v minikube &> /dev/null && [[ "$(minikube version --short)" == "v1.33.1" ]]; then
+    if docker context ls | grep -q "docker-desktop"; then
+        print_message " ⭐️ Found " "Docker Desktop" "$BOLD"
+    else
+        print_partial_message " 💥 Could not find " "minikube version > 1.33.1" ". Please upgrade..." "$BOLD"
+        print_message "" "   https://minikube.sigs.k8s.io/docs/start/" "$BOLD"
+        exit 127
+    fi
+elif [ -n "$minikube_path" ]; then
     print_partial_message " ⭐️ Found " "minikube" ": $minikube_path " "$BOLD"
 else
     print_partial_message " 💥 Could not find " "minikube" ". Please follow this link to install it..." "$BOLD"
@@ -68,24 +97,6 @@ else
     print_partial_message " 💥 Could not find " "kubectl" ". Please follow this link to install it..." "$BOLD"
     print_message "" "   https://kubernetes.io/docs/tasks/tools/" "$BOLD"
     exit 127
-fi
-
-docker_path=$(command -v docker || true)
-if [ -n "$docker_path" ]; then
-    print_partial_message " ⭐️ Found " "docker" ": $docker_path" "$BOLD"
-else
-    print_partial_message " 💥 Could not find " "docker" ". Please follow this link to install Docker Engine..." "$BOLD"
-    print_message "" "   https://docs.docker.com/engine/install/" "$BOLD"
-    exit 127
-fi
-
-current_user=$(whoami)
-if id -nG "$current_user" | grep -qw "docker"; then
-    print_partial_message " ⭐️ Found " "$current_user" " in the docker group" "$BOLD"
-else
-    print_partial_message " 💥 Could not find " "$current_user" " in the docker group. Please add it like this..." "$BOLD"
-    print_message "" "   sudo usermod -aG docker $current_user && newgrp docker" "$BOLD"
-    exit 1
 fi
 
 helm_path=$(command -v helm || true)
