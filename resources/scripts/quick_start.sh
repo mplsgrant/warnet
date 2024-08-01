@@ -163,7 +163,12 @@ print_message "" "" ""
 print_message "" "    Now, let's get the Warnet started..." ""
 print_message "" "" ""
 
-just start
+if [[ "$(uname)" == "Darwin" ]] && command -v minikube &> /dev/null && [[ "$(minikube version --short)" == "v1.33.1" ]]; then
+    just startd
+else
+    just start
+fi
+
 just p &
 sleep 1
 warcli network start
