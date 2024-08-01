@@ -17,7 +17,12 @@ start:
 
     # Function to check if minikube is running
     check_minikube() {
-        minikube status | grep -q "Running" && echo "Minikube is already running" || minikube start --mount --mount-string="$PWD:/mnt/src"
+        current_context=$(docker context show)
+        if [ "$current_context" == "rootless" ]; then
+           minikube status | grep -q "Running" && echo "Minikube is already running" || minikube start --driver=docker --container-runtime=containerd --mount --mount-string="$PWD:/mnt/src"
+        else
+           minikube status | grep -q "Running" && echo "Minikube is already running" || minikube start --mount --mount-string="$PWD:/mnt/src"
+        fi
     }
 
     # Function to check if warnet-rpc container is already running
