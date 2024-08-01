@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
+ERROR_CODE=0
 
 is_cygwin_etal() {
     uname -s | grep -qE "CYGWIN|MINGW|MSYS"
@@ -10,7 +11,7 @@ is_wsl() {
 }
 if is_cygwin_etal || is_wsl; then
     echo "Quick start does not support Windows"
-    exit 1
+    ERROR_CODE=1
 fi
 
 
@@ -58,7 +59,7 @@ if [ -n "$docker_path" ]; then
 else
     print_partial_message " 💥 Could not find " "docker" ". Please follow this link to install Docker Engine..." "$BOLD"
     print_message "" "   https://docs.docker.com/engine/install/" "$BOLD"
-    exit 127
+    ERROR_CODE=127
 fi
 
 current_user=$(whoami)
@@ -72,7 +73,7 @@ elif [[ "$(uname)" == "Darwin" ]]; then
 else
     print_partial_message " 💥 Could not find " "$current_user" " in the docker group. Please add it like this..." "$BOLD"
     print_message "" "   sudo usermod -aG docker $current_user && newgrp docker" "$BOLD"
-    exit 1
+    ERROR_CODE=1
 fi
 
 minikube_path=$(command -v minikube || true)
@@ -82,14 +83,14 @@ if [[ "$(uname)" == "Darwin" ]] && command -v minikube &> /dev/null && [[ "$(min
     else
         print_partial_message " 💥 Could not find " "minikube version > 1.33.1" ". Please upgrade..." "$BOLD"
         print_message "" "   https://minikube.sigs.k8s.io/docs/start/" "$BOLD"
-        exit 127
+        ERROR_CODE=127
     fi
 elif [ -n "$minikube_path" ]; then
     print_partial_message " ⭐️ Found " "minikube" ": $minikube_path " "$BOLD"
 else
     print_partial_message " 💥 Could not find " "minikube" ". Please follow this link to install it..." "$BOLD"
     print_message "" "   https://minikube.sigs.k8s.io/docs/start/" "$BOLD"
-    exit 127
+    ERROR_CODE=127
 fi
 
 kubectl_path=$(command -v kubectl || true)
@@ -98,7 +99,7 @@ if [ -n "$kubectl_path" ]; then
 else
     print_partial_message " 💥 Could not find " "kubectl" ". Please follow this link to install it..." "$BOLD"
     print_message "" "   https://kubernetes.io/docs/tasks/tools/" "$BOLD"
-    exit 127
+    ERROR_CODE=127
 fi
 
 helm_path=$(command -v helm || true)
@@ -107,7 +108,7 @@ if [ -n "$helm_path" ]; then
 else
     print_partial_message " 💥 Could not find " "helm" ". Please follow this link to install it..." "$BOLD"
     print_message "" "   https://helm.sh/docs/intro/install/" "$BOLD"
-    exit 127
+    ERROR_CODE=127
 fi
 
 just_path=$(command -v just || true)
@@ -116,7 +117,7 @@ if [ -n "$just_path" ]; then
 else
     print_partial_message " 💥 Could not find " "just" ". Please follow this link to install it..." "$BOLD"
     print_message "" "   https://github.com/casey/just?tab=readme-ov-file#pre-built-binaries" "$BOLD"
-    exit 127
+    ERROR_CODE=127
 fi
 
 python_path=$(command -v python3 || true)
@@ -125,7 +126,7 @@ if [ -n "$python_path" ]; then
 else
     print_partial_message " 💥 Could not find " "python3" ". Please follow this link to install it (or use your package manager)..." "$BOLD"
     print_message "" "   https://www.python.org/downloads/" "$BOLD"
-    exit 127
+    ERROR_CODE=127
 fi
 
 venv_status=$(python3 -m venv --help || true)
@@ -133,7 +134,12 @@ if [ -n "$venv_status" ]; then
     print_partial_message " ⭐️ Found " "venv" ": a python3 module" "$BOLD"
 else
     print_partial_message " 💥 Could not find " "venv" ". Please install it using your package manager." "$BOLD"
-    exit 127
+    ERROR_CODE=127
+fi
+
+if [ $ERROR_CODE -ne 0 ]; then
+    print_message "" "There were errors in the setup process. Please fix them and try again." "$BOLD"
+    exit $ERROR_CODE
 fi
 
 
