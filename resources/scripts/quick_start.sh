@@ -134,19 +134,6 @@ else
     exit 127
 fi
 
-bpf_status=$(grep CONFIG_BPF /boot/config-"$(uname -r)" || true)
-if [ -n "$bpf_status" ]; then
-    config_bpf=$(echo "$bpf_status" | grep CONFIG_BPF=y)
-    if [ "$config_bpf" = "CONFIG_BPF=y" ]; then
-        print_partial_message " ⭐️ Found " "BPF" ": Berkeley Packet Filters appear enabled" "$BOLD"
-    else
-        print_partial_message " 💥 Could not find " "BPF" ". Please figure out how to enable Berkeley Packet Filters in your kernel." "$BOLD"
-        exit 1
-    fi
-else
-    print_partial_message " 💥 Could not find " "BPF" ". Please figure out how to enable Berkeley Packet Filters in your kernel." "$BOLD"
-    exit 1
-fi
 
 print_message "" "" ""
 print_message "" "    Let's try to spin up a python virtual environment..." ""
