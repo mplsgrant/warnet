@@ -67,6 +67,8 @@ if id -nG "$current_user" | grep -qw "docker"; then
     print_partial_message " ⭐️ Found " "$current_user" " in the docker group" "$BOLD"
 elif [ "$current_context" == "rootless" ]; then
     print_message " " "⭐️ Running Docker as rootless" "$BOLD"
+elif [[ "$(uname)" == "Darwin" ]]; then
+    print_message " " "⭐️ Running Docker on Darwin" "$BOLD"
 else
     print_partial_message " 💥 Could not find " "$current_user" " in the docker group. Please add it like this..." "$BOLD"
     print_message "" "   sudo usermod -aG docker $current_user && newgrp docker" "$BOLD"
