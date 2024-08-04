@@ -18,7 +18,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: chartboost/ruff-action@v1
         with:
+<<<<<<< HEAD
           args: 'format --check'
+=======
+          args: 'format --check --config pyproject.toml'
+          changed-files: 'true'
+>>>>>>> 59e0e63 (ci: ensure ruff format reads config file and excludes files)
   build-image:
     needs: [ruff, ruff-format]
     runs-on: ubuntu-latest
@@ -53,9 +58,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: hynek/setup-cached-uv@v1
+<<<<<<< HEAD
       - uses: azure/setup-helm@v4.2.0
       - uses: medyagh/setup-minikube@master
+=======
+>>>>>>> 59e0e63 (ci: ensure ruff format reads config file and excludes files)
       - uses: azure/setup-helm@v4.2.0
+      - uses: medyagh/setup-minikube@master
         with:
           mount-path: ${{ github.workspace }}:/mnt/src
       - uses: actions/download-artifact@v4
