@@ -1,8 +1,7 @@
 # Running Warnet
 
-Warnet runs a server which can be used to manage multiple networks. On docker
-this runs locally, but on Kubernetes this runs as a `statefulSet` in the
-cluster.
+Warnet runs a server which can be used to manage multiple networks.
+In Kubernetes this runs as a `statefulSet` in the cluster.
 
 If the `$XDG_STATE_HOME` environment variable is set, the server will log to
 a file `$XDG_STATE_HOME/warnet/warnet.log`, otherwise it will use `$HOME/.warnet/warnet.log`.
@@ -11,31 +10,9 @@ a file `$XDG_STATE_HOME/warnet/warnet.log`, otherwise it will use `$HOME/.warnet
 
 // TODO
 
-### Install logging infrastructure
+## Running large networks
 
-First make sure you have `helm` installed, then simply run the following script:
-
-```bash
-./scripts/install_logging.sh
-```
-
-To forward port to view Grafana dashboard:
-
-```bash
-./scripts/connect_logging.sh
-```
-
-## Kubernetes (e.g. minikube)
-
-To start the server run:
-
-```bash
-warnet
-```
-
-### Running large networks
-
-When running a large number of containers on a single host machine (i.e. with the Docker interface), the system may run out of various resources.
+When running a large number of containers on a single host machine, the system may run out of various resources.
 We recommend setting the following values in /etc/sysctl.conf:
 
 ```sh
@@ -65,7 +42,7 @@ Apply the settings by either restarting the host, or without restarting using:
 sudo sysctl -p
 ```
 
-In addition to these settings, you may need to increase the maximum number of permitted open files for the user running the docker daemon (usually root) in /etc/security/limits.conf.
+In addition to these settings, you may need to increase the maximum number of permitted open files in /etc/security/limits.conf.
 This change is often not necessary though so we recommend trying your network without it first.
 
 The following command will apply it to a single shell session, and not persist it.
@@ -75,19 +52,3 @@ Use as root before launching docker.
 # Increase the number of open files allowed per process to 4096
 ulimit -n 4096
 ```
-
-If you are running docker as a service via systemd you can apply it by adding the following to the service file and restarting the service:
-
-```sh
-# Add the following under the [Service] section of the unit file
-LimitNOFILE=4096
-```
-
-Reload the systemd configuration and restart the unit afterwards:
-
-```
-sudo systemctl daemon-reload
-sudo systemctl restart docker
-```
-
-On Ubuntu this file is located at `/lib/systemd/system/docker.service` but you can find it using `sudo systemctl status docker`.
