@@ -21,6 +21,7 @@
         <data key="bitcoin_config">-uacomment=w0</data>
         <data key="exporter">true</data>
         <data key="collect_logs">true</data>
+        <data key="metrics">blocks=getblockcount() inbounds=getnetworkinfo()["connections_in"] outbounds=getnetworkinfo()["connections_in"] mempool_size=getmempoolinfo()["size"]</data>
     </node>
     <node id="1">
         <data key="version">27.0</data>
