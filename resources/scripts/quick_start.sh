@@ -85,6 +85,8 @@ if [[ "$(uname)" == "Darwin" ]] && command -v minikube &> /dev/null && [[ "$(min
         print_message "" "   https://minikube.sigs.k8s.io/docs/start/" "$BOLD"
         ERROR_CODE=127
     fi
+elif docker context ls | grep -q "docker-desktop"; then
+    print_message " ⭐️ Found " "Docker Desktop" "$BOLD"
 elif [ -n "$minikube_path" ]; then
     print_partial_message " ⭐️ Found " "minikube" ": $minikube_path " "$BOLD"
 else
