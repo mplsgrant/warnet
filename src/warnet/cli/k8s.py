@@ -24,13 +24,16 @@ def get_dynamic_client():
     return DynamicClient(client.ApiClient())
 
 
-def get_pods():
-    sclient = get_static_client()
-    return sclient.list_namespaced_pod("warnet")
+def get_pods(namespace: str):
+    try:
+        sclient = get_static_client()
+        return sclient.list_namespaced_pod(namespace)
+    except ConfigException as e:
+        raise
 
 
 def get_mission(mission):
-    pods = get_pods()
+    pods = get_pods("warnet")
     crew = []
     for pod in pods.items:
         if "mission" in pod.metadata.labels and pod.metadata.labels["mission"] == mission:
