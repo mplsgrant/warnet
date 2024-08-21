@@ -3,6 +3,7 @@ from importlib.resources import files
 from typing import Any, Dict
 
 from kubernetes import client, config
+from kubernetes.config import ConfigException
 from kubernetes.dynamic import DynamicClient
 
 from .process import stream_command
@@ -10,9 +11,12 @@ from .process import stream_command
 WAR_MANIFESTS = files("manifests")
 
 
-def get_static_client():
-    config.load_kube_config()
-    return client.CoreV1Api()
+def get_static_client() -> client.CoreV1Api:
+    try:
+        config.load_kube_config()
+        return client.CoreV1Api()
+    except ConfigException as e:
+        raise
 
 
 def get_dynamic_client():
