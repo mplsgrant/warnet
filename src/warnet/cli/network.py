@@ -12,11 +12,13 @@ from rich import print
 from .bitcoin import _rpc
 from .k8s import (
     apply_kubernetes_yaml,
+    ConfigException,
     create_kubernetes_object,
     create_namespace,
     delete_namespace,
     deploy_base_configurations,
     get_edges,
+    get_pods,
     get_mission,
     set_kubectl_context,
 )
@@ -284,3 +286,21 @@ def generate_yaml(graph_file: Path, output: str):
         yaml.dump_all(kubernetes_yaml, f)
 
     print(f"Kubernetes YAML file generated: {output}")
+
+
+@network.command()
+@click.option("--namespace", default="warnet", show_default=True)
+def status(namespace: str) -> None:
+    """
+    Get the status of the pods in the network
+    """
+    try:
+        pods = get_pods(namespace)
+        for pod in pods.items:
+            print(
+                f"Namespace: {pod.metadata.namespace}, Pod Name: {pod.metadata.name}, "
+                f"Status: {pod.status.phase}"
+            )
+    except ConfigException as e:
+        print(f"{e}")
+        print("Consider starting the network")
