@@ -94,7 +94,7 @@ class ConnectDag(Commander):
         self.assert_connection(nine_peers, 8, ConnectionType.IP)
 
         # TODO: This needs to cause the test to fail
-        assert False
+        assert False  # noqa: B011
 
         self.log.info(
             f"Successfully ran the connect_dag.py scenario using a temporary file: "
