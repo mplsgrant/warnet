@@ -1,0 +1,10 @@
+# List of users
+users:
+  - alice
+  - bob
+  - charlie
+
+imageValidator:
+  image: mplsgrant/image-validator:latest
+# Image hash restriction
+validImageHash: "sha256:acfccbd2d2afe5e66e4358b3df8f1036c717bfb0408db00e6c913477c7ff5b89"

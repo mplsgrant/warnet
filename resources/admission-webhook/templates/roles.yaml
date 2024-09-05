@@ -1,0 +1,26 @@
+{{- range .Values.users }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: role-{{ . }}
+  namespace: {{ include "namespaceName" . }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create", "get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rb-{{ . }}
+  namespace: {{ include "namespaceName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "serviceAccountName" . }}
+    namespace: {{ include "namespaceName" . }}
+roleRef:
+  kind: Role
+  name: role-{{ . }}
+  apiGroup: rbac.authorization.k8s.io
+---
+{{- end }}

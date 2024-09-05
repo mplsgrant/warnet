@@ -1,0 +1,6 @@
+The namespaces and service accounts have been created for the following users:
+{{- range .Values.users }}
+- {{ . }}
+{{- end }}
+
+An admission webhook is enforcing the use of containers with the valid image hash.

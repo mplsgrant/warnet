@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-validator-deployment
+  namespace: admission-control
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-validator
+  template:
+    metadata:
+      labels:
+        app: image-validator
+    spec:
+      containers:
+      - name: image-validator-container
+        image: "{{ .Values.imageValidator.image }}"
+        ports:
+        - containerPort: 443
+        volumeMounts:
+        - name: certs
+          mountPath: "/certs"
+          readOnly: true
+        - name: serviceaccounts-volume
+          mountPath: "/etc/serviceaccounts"
+        - name: validimagehash-volume
+          mountPath: "/etc/validImageHash"
+      volumes:
+      - name: certs
+        secret:
+          secretName: webhook-server-cert
+      - name: serviceaccounts-volume
+        configMap:
+          name: serviceaccount-config
+      - name: validimagehash-volume
+        configMap:
+          name: serviceaccount-config

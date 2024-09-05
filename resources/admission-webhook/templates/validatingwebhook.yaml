@@ -1,0 +1,20 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: pod-image-hash-validator
+webhooks:
+  - name: pod-image-hash-check.admission-control.svc
+    clientConfig:
+      service:
+        name: image-validator-service
+        namespace: admission-control
+        path: "/validate"
+      caBundle: {{ .Values.caBundle }}
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    failurePolicy: Fail

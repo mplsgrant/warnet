@@ -1,0 +1,4 @@
+apiVersion: v2
+name: admission-webhook-chart
+description: A Helm chart to create namespaces, service accounts, and enforce pod image hash.
+version: 0.1.0
