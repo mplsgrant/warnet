@@ -136,25 +136,6 @@ def setup():
         except FileNotFoundError as err:
             return False, str(err)
 
-    def is_kubectl_installed() -> tuple[bool, str]:
-        try:
-            version_result = subprocess.run(
-                ["kubectl", "version", "--client"],
-                capture_output=True,
-                text=True,
-            )
-            location_result = subprocess.run(
-                ["which", "kubectl"],
-                capture_output=True,
-                text=True,
-            )
-            if version_result.returncode == 0 and location_result.returncode == 0:
-                return True, location_result.stdout.strip()
-            else:
-                return False, ""
-        except FileNotFoundError as err:
-            return False, str(err)
-
     def is_helm_installed() -> tuple[bool, str]:
         try:
             version_result = subprocess.run(["helm", "version"], capture_output=True, text=True)
@@ -210,12 +191,6 @@ def setup():
         install_instruction="Please make sure minikube is running",
         install_url="https://minikube.sigs.k8s.io/docs/start/",
     )
-    kubectl_info = ToolInfo(
-        tool_name="Kubectl",
-        is_installed_func=is_kubectl_installed,
-        install_instruction="Install kubectl.",
-        install_url="https://kubernetes.io/docs/tasks/tools/install-kubectl/",
-    )
     helm_info = ToolInfo(
         tool_name="Helm",
         is_installed_func=is_helm_installed,
@@ -241,7 +216,7 @@ def setup():
     print("                    ╰───────────────────────────╯                   ")
     print("                                                                    ")
     print("    Let's find out if your system has what it takes to run Warnet...")
-    print("")
+    print("                                                                    ")
 
     try:
         questions = [
@@ -270,7 +245,6 @@ def setup():
                 if is_platform_darwin():
                     check_results.append(check_installation(minikube_version_info))
                 check_results.append(check_installation(minikube_running_info))
-            check_results.append(check_installation(kubectl_info))
             check_results.append(check_installation(helm_info))
         else:
             click.secho("Please re-run setup.", fg="yellow")
