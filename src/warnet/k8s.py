@@ -417,3 +417,24 @@ def wait_for_pod(pod_name, timeout_seconds=10):
             return
         sleep(1)
         timeout_seconds -= 1
+
+
+def open_kubeconfig(kubeconfig_path: str = KUBECONFIG) -> dict:
+    try:
+        with open(kubeconfig_path) as file:
+            return yaml.safe_load(file)
+    except FileNotFoundError as e:
+        raise K8sError(f"Kubeconfig file {kubeconfig_path} not found.") from e
+    except yaml.YAMLError as e:
+        raise K8sError(f"Error parsing kubeconfig: {e}") from e
+
+
+def write_kubeconfig(kube_config: dict) -> None:
+    dir_name = os.path.dirname(KUBECONFIG)
+    try:
+        with tempfile.NamedTemporaryFile("w", dir=dir_name, delete=False) as temp_file:
+            yaml.safe_dump(kube_config, temp_file)
+        os.replace(temp_file.name, KUBECONFIG)
+    except Exception as e:
+        os.remove(temp_file.name)
+        raise K8sError(f"Error writing kubeconfig: {KUBECONFIG}") from e
