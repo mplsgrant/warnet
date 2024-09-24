@@ -249,7 +249,7 @@ def run(scenario_file: str, debug: bool, additional_args: tuple[str]):
         wait_for_pod(name)
         _logs(pod_name=name, follow=True)
         print("Deleting pod...")
-        delete_pod(name)
+        delete_pod(name, namespace=namespace)
 
 
 @click.command()
