@@ -2,6 +2,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 import click
 import yaml
@@ -189,14 +190,15 @@ rpc_password = "tabconf2024"
     return True
 
 
-def deploy_network(directory: Path, debug: bool = False):
+def deploy_network(directory: Path, debug: bool = False, namespace: Optional[str] = None):
     network_file_path = directory / NETWORK_FILE
     defaults_file_path = directory / DEFAULTS_FILE
 
     with network_file_path.open() as f:
         network_file = yaml.safe_load(f)
 
-    namespace = get_default_namespace()
+    if not namespace:
+        namespace = get_default_namespace()
 
     for node in network_file["nodes"]:
         click.echo(f"Deploying node: {node.get('name')}")
