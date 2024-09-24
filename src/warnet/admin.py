@@ -4,7 +4,8 @@ from pathlib import Path
 import click
 from rich import print as richprint
 
-from .constants import NETWORK_DIR
+from .constants import NETWORK_DIR, NETWORK_FILE
+from .deploy import deploy_network, validate_directory
 from .k8s import get_kubeconfig_value, get_namespaces_by_prefix, get_service_accounts_in_namespace
 from .namespaces import copy_namespaces_defaults, namespaces
 from .network import copy_network_defaults
@@ -125,3 +126,34 @@ current-context: {sa}-{namespace}
         "Users can then use by running `warnet auth <file>` or with kubectl by specifying the --kubeconfig flag or by setting the KUBECONFIG environment variable."
     )
     click.echo(f"Note: The tokens will expire after {token_duration} seconds.")
+
+
+@admin.command()
+@click.argument(
+    "directory",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True),
+    callback=validate_directory,
+)
+@click.option("--debug", is_flag=True)
+@click.option(
+    "--namespace",
+    default=None,
+    type=None,
+    help="The namespace in which to deploy the network",
+)
+def deploy(directory, debug, namespace):
+    """Deploy a warnet with topology loaded from <directory>"""
+    directory = Path(directory)
+
+    if (directory / NETWORK_FILE).exists():
+        # dl = deploy_logging_stack(directory, debug)
+        deploy_network(directory, debug, namespace)
+    #     df = deploy_fork_observer(directory, debug)
+    #     if dl | df:
+    #         deploy_caddy(directory, debug)
+    # elif (directory / NAMESPACES_FILE).exists():
+    #    deploy_namespaces(directory)
+    else:
+        click.echo(
+            "Error: Neither network.yaml nor namespaces.yaml found in the specified directory."
+        )
