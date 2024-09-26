@@ -87,3 +87,98 @@ docker buildx build \
   --tag bitcoindevproject/bitcoin:0.16.1 \
   resources/images/bitcoin/insecure
 ```
+
+## unknown p2p message crash
+
+Will crash when sent an Unknown P2P message
+User agent: "/unknown-message:99.1.0/"
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/armhf \
+  --build-context bitcoin-src="." \
+  --build-arg ALPINE_VERSION="3.20" \
+  --build-arg BITCOIN_VERSION="28.1.1" \
+  --build-arg EXTRA_PACKAGES="sqlite-dev" \
+  --build-arg EXTRA_RUNTIME_PACKAGES="" \
+  --build-arg REPO="willcl-ark/bitcoin" \
+  --build-arg COMMIT_SHA="ffe3952b2ee4f66083176815fc55d092e0fcc1f8" \
+  --tag bitcoindevproject/bitcoin:unknown-message \
+  resources/images/bitcoin/insecure
+```
+
+## invalid blocks crash
+
+Will crash when sent an invalid block
+User agent: "/invalid-block:99.1.0/"
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/armhf \
+  --build-context bitcoin-src="." \
+  --build-arg ALPINE_VERSION="3.20" \
+  --build-arg BITCOIN_VERSION="28.1.1" \
+  --build-arg EXTRA_PACKAGES="sqlite-dev" \
+  --build-arg EXTRA_RUNTIME_PACKAGES="" \
+  --build-arg REPO="willcl-ark/bitcoin" \
+  --build-arg COMMIT_SHA="dae4caab34b6c5c58324b1356897953c99a6e920" \
+  --tag bitcoindevproject/bitcoin:invalid-blocks \
+  resources/images/bitcoin/insecure
+```
+
+## too many orphans crash
+
+Will crash when we have 50 orphans in the orphanage
+User agent: "/50-orphans:99.1.0/"
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/armhf \
+  --build-context bitcoin-src="." \
+  --build-arg ALPINE_VERSION="3.20" \
+  --build-arg BITCOIN_VERSION="28.1.1" \
+  --build-arg EXTRA_PACKAGES="sqlite-dev" \
+  --build-arg EXTRA_RUNTIME_PACKAGES="" \
+  --build-arg REPO="willcl-ark/bitcoin" \
+  --build-arg COMMIT_SHA="38aff9d695f5aa187fc3b75f08228248963372ee" \
+  --tag bitcoindevproject/bitcoin:50-orphans \
+  resources/images/bitcoin/insecure
+```
+
+## full mempool crash
+
+Will crash when we would normally trim the mempool size
+User agent: "/no-mp-trim:99.1.0/"
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/armhf \
+  --build-context bitcoin-src="." \
+  --build-arg ALPINE_VERSION="3.20" \
+  --build-arg BITCOIN_VERSION="28.1.1" \
+  --build-arg EXTRA_PACKAGES="sqlite-dev" \
+  --build-arg EXTRA_RUNTIME_PACKAGES="" \
+  --build-arg REPO="willcl-ark/bitcoin" \
+  --build-arg COMMIT_SHA="f9b6fb7fdb586a57945a835fe228b9eabb137f1e" \
+  --tag bitcoindevproject/bitcoin:no-mp-trim\
+  resources/images/bitcoin/insecure
+```
+
+## disabled opcodes crash
+
+Will crash when processing a disabled opcode
+User agent: "/no-op-cat:99.1.0/"
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/armhf \
+  --build-context bitcoin-src="." \
+  --build-arg ALPINE_VERSION="3.20" \
+  --build-arg BITCOIN_VERSION="28.1.1" \
+  --build-arg EXTRA_PACKAGES="sqlite-dev" \
+  --build-arg EXTRA_RUNTIME_PACKAGES="" \
+  --build-arg REPO="willcl-ark/bitcoin" \
+  --build-arg COMMIT_SHA="e8cc07e4208073c62d0bb642fef7529956f4452d" \
+  --tag bitcoindevproject/bitcoin:disabled-opcodes \
+  resources/images/bitcoin/insecure
+```
