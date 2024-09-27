@@ -43,13 +43,14 @@ def validate_directory(ctx, param, value):
     callback=validate_directory,
 )
 @click.option("--debug", is_flag=True)
-def deploy(directory, debug):
+@click.option("--namespace", type=str)
+def deploy(directory, debug, namespace):
     """Deploy a warnet with topology loaded from <directory>"""
     directory = Path(directory)
 
     if (directory / NETWORK_FILE).exists():
         dl = deploy_logging_stack(directory, debug)
-        deploy_network(directory, debug)
+        deploy_network(directory, debug, namespace=namespace)
         df = deploy_fork_observer(directory, debug)
         if dl | df:
             deploy_ingress(debug)
