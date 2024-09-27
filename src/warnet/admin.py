@@ -4,7 +4,7 @@ from pathlib import Path
 import click
 from rich import print as richprint
 
-from .constants import NETWORK_DIR, NETWORK_FILE
+from .constants import NETWORK_DIR, NETWORK_FILE, WARGAMES_NAMESPACE_PREFIX
 from .deploy import deploy_network, validate_directory
 from .k8s import get_kubeconfig_value, get_namespaces_by_prefix, get_service_accounts_in_namespace
 from .namespaces import copy_namespaces_defaults, namespaces
@@ -39,7 +39,6 @@ def init():
 
 
 @admin.command()
-@click.argument("prefix", type=str, required=True)
 @click.option(
     "--kubeconfig-dir",
     default="kubeconfigs",
@@ -51,7 +50,7 @@ def init():
     type=int,
     help="Duration of the token in seconds (default: 48 hours)",
 )
-def create_kubeconfigs(prefix: str, kubeconfig_dir, token_duration):
+def create_kubeconfigs(kubeconfig_dir, token_duration):
     """Create kubeconfig files for all ServiceAccounts in warnet team namespaces starting with <prefix>."""
     kubeconfig_dir = os.path.expanduser(kubeconfig_dir)
 
@@ -68,7 +67,7 @@ def create_kubeconfigs(prefix: str, kubeconfig_dir, token_duration):
     # TODO: choose a prefix convention and have it managed by the helm charts instead of requiring the
     # admin user to pipe through the correct string in multiple places. Another would be to use
     # labels instead of namespace naming conventions
-    warnet_namespaces = get_namespaces_by_prefix(prefix)
+    warnet_namespaces = get_namespaces_by_prefix(WARGAMES_NAMESPACE_PREFIX)
 
     for namespace in warnet_namespaces:
         click.echo(f"Processing namespace: {namespace}")
