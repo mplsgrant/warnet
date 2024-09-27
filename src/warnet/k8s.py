@@ -8,7 +8,8 @@ from time import sleep
 import yaml
 from kubernetes import client, config, watch
 from kubernetes.client import CoreV1Api
-from kubernetes.client.models import V1PodList
+from kubernetes.client.exceptions import ApiException
+from kubernetes.client.models import V1Namespace, V1PodList
 from kubernetes.dynamic import DynamicClient
 from kubernetes.stream import stream
 
@@ -356,13 +357,25 @@ def get_kubeconfig_value(jsonpath):
     return run_command(command)
 
 
-def get_namespaces_by_prefix(prefix: str):
+def get_namespaces() -> list[V1Namespace]:
+    sclient = get_static_client()
+    try:
+        return sclient.list_namespace().items
+
+    except ApiException as e:
+        if e.status == 403:
+            ns = sclient.read_namespace(name=get_default_namespace())
+            return [ns]
+        else:
+            return []
+
+
+def get_namespaces_by_prefix(prefix: str) -> list[V1Namespace]:
     """
     Get all namespaces beginning with `prefix`. Returns empty list of no namespaces with the specified prefix are found.
     """
-    command = "kubectl get namespaces -o jsonpath={.items[*].metadata.name}"
-    namespaces = run_command(command).split()
-    return [ns for ns in namespaces if ns.startswith(prefix)]
+    namespaces = get_namespaces()
+    return [ns for ns in namespaces if ns.metadata.name.startswith(prefix)]
 
 
 def get_service_accounts_in_namespace(namespace):
