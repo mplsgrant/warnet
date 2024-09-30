@@ -71,7 +71,8 @@ def create_kubeconfigs(kubeconfig_dir, token_duration):
     # labels instead of namespace naming conventions
     warnet_namespaces = get_namespaces_by_prefix(WARGAMES_NAMESPACE_PREFIX)
 
-    for namespace in warnet_namespaces:
+    for v1namespace in warnet_namespaces:
+        namespace = v1namespace.metadata.name
         click.echo(f"Processing namespace: {namespace}")
         service_accounts = get_service_accounts_in_namespace(namespace)
 
