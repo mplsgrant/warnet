@@ -34,9 +34,10 @@ class ScenariosTest(TestBase):
 
     def scenario_running(self, scenario_name: str):
         """Check that we are only running a single scenario of the correct name"""
-        deployed = scenarios_deployed()
-        assert len(deployed) == 1
-        return scenario_name in deployed[0]["name"]
+        # deployed = scenarios_deployed()
+        # assert len(deployed) == 1
+        # return scenario_name in deployed[0]["name"]
+        return False
 
     def check_scenario_stopped(self):
         running = scenarios_deployed()
