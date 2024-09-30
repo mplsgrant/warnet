@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         test:
+          - scenarios_test.py
           - namespace_admin_test.py
     steps:
       - uses: actions/checkout@v4
