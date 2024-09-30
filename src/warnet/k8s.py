@@ -353,6 +353,8 @@ def write_file_to_container(pod_name, container_name, dst_path, data):
         return True
     except Exception as e:
         print(f"Failed to copy data to {pod_name}({container_name}):{dst_path}:\n{e}")
+
+
 def get_kubeconfig_value(jsonpath):
     command = f"kubectl config view --minify -o jsonpath={jsonpath}"
     return run_command(command)
