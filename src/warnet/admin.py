@@ -147,13 +147,7 @@ def deploy(directory, debug, namespace):
     directory = Path(directory)
 
     if (directory / NETWORK_FILE).exists():
-        # dl = deploy_logging_stack(directory, debug)
         deploy_network(directory, debug, namespace)
-    #     df = deploy_fork_observer(directory, debug)
-    #     if dl | df:
-    #         deploy_caddy(directory, debug)
-    # elif (directory / NAMESPACES_FILE).exists():
-    #    deploy_namespaces(directory)
     else:
         click.echo(
             "Error: Neither network.yaml nor namespaces.yaml found in the specified directory."
