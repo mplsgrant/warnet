@@ -75,14 +75,15 @@ class NamespaceAdminTest(TestBase):
         return namespaces
 
     def two_namespaces_are_validated(self) -> bool:
-        maybe_namespaces = self.get_namespaces()
-        if maybe_namespaces is None:
-            return False
-        if len(maybe_namespaces) != 2:
-            return False
-        if "wargames-blue-team" not in maybe_namespaces:
-            return False
-        return "wargames-red-team" in maybe_namespaces
+        # maybe_namespaces = self.get_namespaces()
+        # if maybe_namespaces is None:
+        #     return False
+        # if len(maybe_namespaces) != 2:
+        #     return False
+        # if "wargames-blue-team" not in maybe_namespaces:
+        #     return False
+        # return "wargames-red-team" in maybe_namespaces
+        return False
 
 
 if __name__ == "__main__":
