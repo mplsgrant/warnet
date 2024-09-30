@@ -34,8 +34,6 @@ $ cd namespaces
 $ warnet deploy two_namespaces_two_users
 ```
 
-**TODO**: `warnet deploy namespaces/two_namespaces_two_users` fails with an error about directory handling
-
 Observe that this creates service accounts and namespaces in the cluster:
 
 ```shell
@@ -43,20 +41,14 @@ $ kubectl get ns
 $ kubectl get sa -A
 ```
 
-**TODO**: `warnet admin namespaces list` does not show the teams as yet.
-
-**TODO**: Lift `kubectl get sa -A` into Warnet.
-
 ### Creating Warnet invites
 A Warnet invite is a Kubernetes config file.
 
 Create invites for each of your users.
 
 ```shell
-$ warnet admin create-kubeconfigs wargames
+$ warnet admin create-kubeconfigs
 ```
-
-Take note of the "wargames" prefix we used. That aligns with the "wargames" prefix of the namespaces we created for our users.
 
 Observe the *kubeconfigs* directory. It holds invites for each user.
 
