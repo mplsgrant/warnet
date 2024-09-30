@@ -22,15 +22,13 @@ class NamespaceAdminTest(TestBase):
         try:
             self.setup_namespaces()
             self.setup_service_accounts()
-        except Exception as e:
-            self.log.info(e)
         finally:
             self.cleanup()
 
     def setup_namespaces(self):
         self.log.info("Setting up the namespaces")
         self.log.info(self.warnet(f"deploy {self.namespace_dir}"))
-        self.wait_for_predicate(lambda: self.two_namespaces_are_validated)
+        self.wait_for_predicate(lambda: self.two_namespaces_are_validated())
 
     def setup_service_accounts(self):
         self.log.info(self.warnet("admin create-kubeconfigs"))
@@ -74,7 +72,7 @@ class NamespaceAdminTest(TestBase):
         self.log.info(f"Namespaces: {namespaces}")
         return namespaces
 
-    def two_namespaces_are_validated(self) -> bool:
+    def two_namespaces_are_validated(self):
         # maybe_namespaces = self.get_namespaces()
         # if maybe_namespaces is None:
         #     return False
