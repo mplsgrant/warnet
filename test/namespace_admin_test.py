@@ -22,19 +22,19 @@ class NamespaceAdminTest(TestBase):
         try:
             self.setup_namespaces()
             self.setup_service_accounts()
-        except Exception as e:
-            self.log.info(e)
         finally:
             self.cleanup()
 
     def setup_namespaces(self):
         self.log.info("Setting up the namespaces")
         self.log.info(self.warnet(f"deploy {self.namespace_dir}"))
-        self.wait_for_predicate(lambda: self.two_namespaces_are_validated)
+        self.wait_for_predicate(self.two_namespaces_are_validated)
+        self.log.info("Namespace setup complete")
 
     def setup_service_accounts(self):
+        self.log.info("Creating service accounts...")
         self.log.info(self.warnet("admin create-kubeconfigs"))
-        self.wait_for_predicate(lambda: self.service_accounts_are_validated)
+        self.wait_for_predicate(self.service_accounts_are_validated)
 
     def get_service_accounts(self) -> Optional[list[dict[str, str]]]:
         self.log.info("Setting up service accounts")
@@ -54,23 +54,23 @@ class NamespaceAdminTest(TestBase):
         return service_accounts
 
     def service_accounts_are_validated(self) -> bool:
+        self.log.info("Checking service accounts")
         maybe_service_accounts = self.get_service_accounts()
         expected = {
-            "gary": [],
             "wargames-blue-team": ["carol", "default", "mallory"],
             "wargames-red-team": ["alice", "bob", "default"],
         }
         return maybe_service_accounts == expected
 
     def get_namespaces(self) -> Optional[list[str]]:
-        resp = self.warnet("warnet admin namespaces list")
+        self.log.info("Querying the namespaces...")
+        resp = self.warnet("admin namespaces list")
         if resp == "No warnet namespaces found.":
             return None
-
         namespaces = []
-        self.log.info(namespaces)
         for line in resp.splitlines():
-            namespaces.append(line.lstrip("- "))
+            if line.startswith("- "):
+                namespaces.append(line.lstrip("- "))
         self.log.info(f"Namespaces: {namespaces}")
         return namespaces
 
