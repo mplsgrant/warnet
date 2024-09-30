@@ -17,6 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: eifinger/setup-uv@v1
+      - run: uvx ruff --version
       - run: uvx ruff check .
 
   ruff-format:
