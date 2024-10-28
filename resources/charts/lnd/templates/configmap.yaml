@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.lnd.name }}
+data:
+  lnd.conf: |
+    [Application Options]
+    alias={{ .Values.lnd.config.alias }}    
+    [Bitcoin]
+    bitcoin.signet=true
+    bitcoin.node=bitcoind
+    [Bitcoind]    
+    bitcoind.rpchost={{ .Values.lnd.config.bitcoindHost }}
+    bitcoind.rpcuser={{ .Values.lnd.config.rpcuser }}
+    bitcoind.rpcpass={{ .Values.lnd.config.rpcpassword }}
+    bitcoind.zmqpubrawblock={{ .Values.lnd.config.bitcoindZmqPubRawBlock }}"
+    bitcoind.zmqpubrawtx={{ .Values.lnd.config.bitcoindZmqPubRawTx }}"

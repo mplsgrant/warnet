@@ -1,0 +1,16 @@
+apiVersion: v2
+name: "lnd"
+description: A Helm chart for deploying LND (Lightning Network Daemon) to connect to Bitcoind on Signet
+version: 0.1.0
+appVersion: "v0.18.2"
+keywords:
+  - lightning
+  - lnd
+  - bitcoind
+  - signet
+maintainers:
+  - name: Your Name
+    email: your.email@example.com
+sources:
+  - https://github.com/lightningnetwork/lnd
+home: https://github.com/lightningnetwork/lnd
