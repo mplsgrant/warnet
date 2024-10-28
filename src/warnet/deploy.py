@@ -10,6 +10,8 @@ import yaml
 from .constants import (
     BITCOIN_CHART_LOCATION,
     CADDY_CHART,
+    CHART_FILE,
+    CHART_NAME_TAG,
     DEFAULTS_FILE,
     DEFAULTS_NAMESPACE_FILE,
     FORK_OBSERVER_CHART,
@@ -39,7 +41,11 @@ def validate_directory(ctx, param, value):
     directory = Path(value)
     if not directory.is_dir():
         raise click.BadParameter(f"'{value}' is not a valid directory.{HINT}")
-    if not (directory / NETWORK_FILE).exists() and not (directory / NAMESPACES_FILE).exists():
+    if (
+        not (directory / NETWORK_FILE).exists()
+        and not (directory / NAMESPACES_FILE).exists()
+        and not (directory / "Chart.yaml").exists()
+    ):
         raise click.BadParameter(
             f"'{value}' does not contain a valid network.yaml or namespaces.yaml file.{HINT}"
         )
@@ -61,12 +67,7 @@ def deploy(directory, debug, namespace, to_all_users, unknown_args):
     if unknown_args:
         raise click.BadParameter(f"Unknown args: {unknown_args}{HINT}")
 
-    if to_all_users:
-        namespaces = get_namespaces_by_type(WARGAMES_NAMESPACE_PREFIX)
-        for namespace in namespaces:
-            _deploy(directory, debug, namespace.metadata.name, False)
-    else:
-        _deploy(directory, debug, namespace, to_all_users)
+    _deploy(directory, debug, namespace, to_all_users)
 
 
 def _deploy(directory, debug, namespace, to_all_users):
@@ -76,7 +77,7 @@ def _deploy(directory, debug, namespace, to_all_users):
     if to_all_users:
         namespaces = get_namespaces_by_type(WARGAMES_NAMESPACE_PREFIX)
         for namespace in namespaces:
-            deploy(directory, debug, namespace.metadata.name, False)
+            _deploy(directory, debug, namespace.metadata.name, False)
         return
 
     if (directory / NETWORK_FILE).exists():
@@ -88,6 +89,15 @@ def _deploy(directory, debug, namespace, to_all_users):
             deploy_caddy(directory, debug)
     elif (directory / NAMESPACES_FILE).exists():
         deploy_namespaces(directory)
+    elif (Path(directory) / CHART_FILE).exists():
+        with open(Path(directory) / CHART_FILE) as f:
+            chart = yaml.safe_load(f)
+            name = chart.get(CHART_NAME_TAG)
+            if name:
+                _deploy_chart(directory, name, namespace)
+            else:
+                click.secho(f"Could not load chart: {directory}")
+                sys.exit(1)
     else:
         click.echo(
             "Error: Neither network.yaml nor namespaces.yaml found in the specified directory."
@@ -227,6 +237,15 @@ rpc_password = "tabconf2024"
         click.echo(f"Failed to run Helm command: {cmd}")
         return False
     return True
+
+
+def _deploy_chart(directory: Path, name: str, namespace: Optional[str]):
+    namespace = get_default_namespace_or(namespace)
+    cmd = f"{HELM_COMMAND} {name} {directory} --namespace {namespace} --debug"
+    click.secho(cmd)
+    if not stream_command(cmd):
+        click.echo(f"Failed to run Helm command: {cmd}")
+        return
 
 
 def deploy_network(directory: Path, debug: bool = False, namespace: Optional[str] = None):
